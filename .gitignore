@@ -1,0 +1,59 @@
+.env
+/.vscode/
+__pycache__/
+.venv/
+venv/
+env/
+.env.local
+.env.*
+
+# IDE / Editor
+.idea/
+.vscode/
+
+# Python
+*.py[cod]
+*$py.class
+
+# Byte-compiled / cache
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Django
+*.sqlite3
+/backend/db.sqlite3
+db.sqlite3
+staticfiles/
+
+# Logs
+*.log
+logs/
+
+# Env and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Testing / coverage
+.coverage
+htmlcov/
+
+# Typechecker / analysis
+.pyre/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor temporary files
+*.swp
+*~
