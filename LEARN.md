@@ -22,6 +22,9 @@
   - django ORM
   - Q object
 
+  - mixins, JWT
+  
+
 #
 
   

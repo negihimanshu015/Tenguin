@@ -131,7 +131,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "core.auth.ClerkJWTAuthentication",
+    ],
     "EXCEPTIION_HANDLER": "core.handlers.drf_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "core.pagination.DefaultPagination",
     "PAGE_SIZE": 10,
 }
+
+CLERK_ISSUER = os.getenv("CLERK_ISSUER")  
+CLERK_AUDIENCE = os.getenv("CLERK_AUDIENCE")  
+CLERK_AUTO_CREATE_LOCAL_USER = True
