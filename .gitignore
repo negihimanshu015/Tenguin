@@ -1,59 +1,118 @@
+# Environment variables
 .env
-/.vscode/
-__pycache__/
+.env.local
+.env.*.local
+.env.prod
+.env.dev
+.env.test
+
+# Virtual environments
 .venv/
 venv/
+ENV/
 env/
-.env.local
-.env.*
+.env/
 
 # IDE / Editor
 .idea/
 .vscode/
+*.code-workspace
+.DS_Store
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+.swp
+.swo
+*~
+.vim/
 
 # Python
 *.py[cod]
 *$py.class
-
-# Byte-compiled / cache
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-
-# Distribution / packaging
-build/
-dist/
+*.so
+*.egg
 *.egg-info/
+dist/
+build/
+.eggs/
 pip-wheel-metadata/
+*.whl
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+*.cover
+.pytest_cache
 
 # Django
 *.sqlite3
-/backend/db.sqlite3
+*.db
 db.sqlite3
-staticfiles/
+/backend/db.sqlite3
+/staticfiles/
+/static/admin/
+/static/rest_framework/
+/media/
+/uploads/
+
+# Secrets and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
 
 # Logs
 *.log
 logs/
+log/
 
-# Env and secrets
-.env
-.env.*
-*.pem
-*.key
+# Docker
+.dockerignore
+docker-compose.override.yml
 
-# Testing / coverage
-.coverage
-htmlcov/
-
-# Typechecker / analysis
-.pyre/
-
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 desktop.ini
+.Thumbs.db
+ehthumbs.db
 
-# Editor temporary files
+# System
 *.swp
+*.swo
 *~
+*.tmp
+.AppleDouble
+.LSOverride
+._*
+
+# Node/frontend (if applicable)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Misc
+.cache/
+.tmp/
+.vscode-test/
+.nyc_output/

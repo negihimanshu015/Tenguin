@@ -38,7 +38,7 @@ def _get_public_key(token:str, issuer:str):
 
     for jwk in jwks.get("keys", []):
         if jwk.get("kid") == kid:
-            return jwt.algorithms.RSAAlgorithms.from_jwk(json.dumps(jwk))
+            return jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
     
     cache.delete(JWKS_CACHE_KEY)
     jwks = _get_jwks(issuer)
@@ -81,8 +81,8 @@ class ClerkAuthentication(BaseAuthentication):
 
             payload = jwt.decode(token, **token_args)
 
-        except Exception:
-            raise AuthenticationFailed("Invalid user")
+        except Exception as e   :
+            raise AuthenticationFailed(str(e))
         
         clerk_id = payload.get("sub")
 
@@ -95,7 +95,7 @@ class ClerkAuthentication(BaseAuthentication):
             user = User.objects.get(clerk_id = clerk_id)
         
         except User.DoesNotExist:
-            user = self._auto_crate_user(user, clerk_id, payload)
+            user = self._auto_create_user(User, clerk_id, payload)
 
         return (user, token)
     
@@ -103,17 +103,17 @@ class ClerkAuthentication(BaseAuthentication):
     def _auto_create_user(self, User, clerk_id, payload):
         defaults = {
             "clerk_id":clerk_id,
-            "email":payload.get("email"),
+            "email": payload.get("email") or f"{clerk_id}@clerk.local",
             "first_name":payload.get("first_name",""),
             "last_name":payload.get("last_name","")
         }
 
         try:
             with transaction.atomic():
-                return User.object.create(**defaults)
+                return User.objects.create(**defaults)
         
-        except Exception:
-            raise AuthenticationFailed("Failed to create user")
+        except Exception as e:
+            raise AuthenticationFailed(str(e))
 
 
 

@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core.apps.CoreConfig'
+    'core.apps.CoreConfig',
+    'project',
+    'tasks'    
 ]
 
 MIDDLEWARE = [
@@ -132,13 +134,31 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "core.auth.ClerkJWTAuthentication",
+        "core.auth.ClerkAuthentication",
     ],
-    "EXCEPTIION_HANDLER": "core.handlers.drf_exception_handler",
+     "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],    
+    "EXCEPTION_HANDLER": "core.handlers.drf_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "core.pagination.DefaultPagination",
     "PAGE_SIZE": 10,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "core.throttles.AuthenticatedUserThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "authenticated_user": "1000/day",
+    },
 }
 
 CLERK_ISSUER = os.getenv("CLERK_ISSUER")  
 CLERK_AUDIENCE = os.getenv("CLERK_AUDIENCE")  
 CLERK_AUTO_CREATE_LOCAL_USER = True
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "default-locmem-cache",
+    }
+}
+
+AUTH_USER_MODEL = "core.User"

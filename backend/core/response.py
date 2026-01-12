@@ -6,17 +6,17 @@ def success(data=None, message="Success", status_code=200):
             "message": message,
             "data": data
         },
-        status_code= status_code
+        status=status_code
     )
 
-def created(data=None, message= "Created"):
+def created(data=None, message="Created"):
     return success(data=data, message=message, status_code=201)
 
-def updated(data=None, message= "Updated"):
+def updated(data=None, message="Updated"):
     return success(data=data, message=message, status_code=200)
 
-def deleted(message= "Deleted"):
+def deleted(message="Deleted"):
     return success(data=None, message=message, status_code=200)
 
 def no_content():
-    return success(status_code=204)
+    return Response(status=204)

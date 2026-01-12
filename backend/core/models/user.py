@@ -1,18 +1,50 @@
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from core.models.base import BaseModel
 
-class user(BaseModel, AbstractBaseUser, PermissionsMixin):
-    Clerk_id = models.CharField(max_length=50, unique=True)
+class UserManager(BaseUserManager):
+    def create_user(self, email, clerk_id, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
+
+        email = self.normalize_email(email)
+        user = self.model(
+            email=email,
+            clerk_id=clerk_id,
+            **extra_fields,
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, clerk_id, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True")
+
+        return self.create_user(email, clerk_id, password, **extra_fields)
+    
+
+class User(BaseModel, AbstractBaseUser, PermissionsMixin):
+    clerk_id = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=50, unique=True)
 
     first_name = models.CharField(max_length=50, default = "", blank=True)
     last_name = models.CharField(max_length=50, default = "", blank=True)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELD = ["clerk_id"]
+    REQUIRED_FIELDS = ["clerk_id"]
+
+    objects = UserManager()
 
     def __str__(self):
-        return f"{self.email}({self.Clerk_id})"
+        return f"{self.email}({self.clerk_id})"
     
