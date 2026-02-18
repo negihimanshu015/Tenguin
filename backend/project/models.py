@@ -20,7 +20,7 @@ class Project(BaseModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["owner", "name"],
-                condition=models.Q(is_active=False),
+                condition=models.Q(is_active=True),
                 name="unique_active_project_per_owner",
             )
         ]

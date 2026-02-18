@@ -1,7 +1,8 @@
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from core.exceptions import (
-    ValidationExceptions,
-    PermissionExceptions,
+    ValidationException,
+    PermissionException,
+    ConflictException,
 )
 from project.models import Project
 
@@ -13,13 +14,16 @@ class ProjectService:
     def create_project(*, owner, name, description=""):
         name = name.strip()
         if not name:
-            raise ValidationExceptions("Project name cannot be empty")
+            raise ValidationException("Project name cannot be empty")
 
-        return Project.objects.create(
-            owner=owner,
-            name=name,
-            description=description,
-        )
+        try:
+             return Project.objects.create(
+                owner=owner,
+                name=name,
+                description=description,
+            )
+        except IntegrityError:
+            raise ConflictException("Project with this name already exists")
 
     @staticmethod
     def get_project_for_owner(*, owner, project_id):
@@ -30,7 +34,7 @@ class ProjectService:
                 is_active=True,
             )
         except Project.DoesNotExist:
-            raise PermissionExceptions("Project not found or access denied")
+            raise PermissionException("Project not found or access denied")
 
     @staticmethod
     @transaction.atomic
@@ -43,7 +47,7 @@ class ProjectService:
         if name is not None:
             name = name.strip()
             if not name:
-                raise ValidationExceptions("Project name cannot be empty")
+                raise ValidationException("Project name cannot be empty")
             project.name = name
 
         if description is not None:

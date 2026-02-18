@@ -18,7 +18,7 @@ class TestProjectAPI:
         self.client.force_authenticate(user=user)
 
     def test_list_projects(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         Project.objects.create(owner=owner, name="Project 1")
@@ -31,7 +31,7 @@ class TestProjectAPI:
         assert response.data["meta"]["total_items"] == 2
 
     def test_create_project(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         response = self.client.post(
@@ -44,7 +44,7 @@ class TestProjectAPI:
         assert response.data["data"]["name"] == "New Project"
 
     def test_get_project_detail(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         project = Project.objects.create(owner=owner, name="Project")
@@ -55,18 +55,18 @@ class TestProjectAPI:
         assert response.data["data"]["id"] == str(project.id)
 
     def test_project_permission_denied(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        other = User.objects.create_user(email="other@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
         self.authenticate(other)
 
         project = Project.objects.create(owner=owner, name="Project")
 
         response = self.client.get(f"/api/v1/projects/{project.id}/")
 
-        assert response.status_code == 403
+        assert response.status_code == 404
 
     def test_delete_project(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         project = Project.objects.create(owner=owner, name="Project")

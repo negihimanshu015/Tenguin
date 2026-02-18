@@ -2,12 +2,12 @@ import logging
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status
-from core.exceptions import AppExceptions
+from core.exceptions import AppException
 
 logger = logging.getLogger(__name__)
 
 def drf_exception_handler(exc, context):
-    if isinstance(exc, AppExceptions):
+    if isinstance(exc, AppException):
         return Response(
             {"message": exc.message},
             status=exc.status_code

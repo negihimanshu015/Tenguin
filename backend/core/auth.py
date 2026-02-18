@@ -8,6 +8,7 @@ from django.db import transaction
 from django.contrib.auth import get_user_model
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
+from core.services import user_services
 
 JWKS_CACHE_KEY = "clerk_jwks"
 JWKS_CACHE_TTL = 60 * 60
@@ -101,16 +102,8 @@ class ClerkAuthentication(BaseAuthentication):
     
 
     def _auto_create_user(self, User, clerk_id, payload):
-        defaults = {
-            "clerk_id":clerk_id,
-            "email": payload.get("email") or f"{clerk_id}@clerk.local",
-            "first_name":payload.get("first_name",""),
-            "last_name":payload.get("last_name","")
-        }
-
         try:
-            with transaction.atomic():
-                return User.objects.create(**defaults)
+            return user_services.create_user(clerk_id=clerk_id, payload=payload)
         
         except Exception as e:
             raise AuthenticationFailed(str(e))

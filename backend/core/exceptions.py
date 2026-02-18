@@ -1,6 +1,6 @@
 from typing import Optional
 
-class AppExceptions(Exception):
+class AppException(Exception):
     default_mssg = "An error occurred."
     status_code = 500
 
@@ -10,30 +10,30 @@ class AppExceptions(Exception):
         if code is not None:
             self.status_code = code
 
-class DomainException(AppExceptions):
+class DomainException(AppException):
     default_mssg = "Domain exception occurred."
     status_code = 400
 
-class ValidationExceptions(AppExceptions):
+class ValidationException(AppException):
     default_mssg = "Invalid Input"
     status_code = 400
 
-class NotFoundExceptions(AppExceptions):
+class NotFoundException(AppException):
     default_mssg = "Not Found."
     status_code = 404
 
-class ConflictExceptions(AppExceptions):
+class ConflictException(AppException):
     default_mssg = "Conflict has occurred."
     status_code = 409
 
-class PermissionExceptions(AppExceptions):
+class PermissionException(AppException):
     default_mssg = "Permission Denied."
     status_code = 403
 
-class AuthExceptions(AppExceptions):
+class AuthException(AppException):
     default_mssg = "Authentication error."
     status_code = 401
 
-class RateLimitExceptions(AppExceptions):
+class RateLimitException(AppException):
     default_mssg = "Rate limit exceeded."
     status_code = 429

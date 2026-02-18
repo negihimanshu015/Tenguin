@@ -93,7 +93,6 @@ class AssignedTaskListView(APIView):
 
     def get(self, request):
         queryset = get_active_tasks_assigned_to_user(
-            owner=request.user,
             assignee=request.user,
         )
 

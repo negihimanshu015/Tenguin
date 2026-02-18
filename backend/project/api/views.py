@@ -11,6 +11,7 @@ from project.serializers.project_detail import ProjectDetailSerializer
 from project.serializers.project_write import ProjectWriteSerializer
 
 from core.pagination import DefaultPagination
+from core.exceptions import NotFoundException
 from core.response import (
     success,
     created,
@@ -62,7 +63,7 @@ class ProjectDetailView(APIView):
     def get(self, request, project_id):
         project = self.get_object()
         if project is None:
-            return no_content()
+            raise NotFoundException("Project not found")
 
         return success(
             data=ProjectDetailSerializer(project).data

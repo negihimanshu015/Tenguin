@@ -19,7 +19,7 @@ class TestTaskAPI:
         self.client.force_authenticate(user=user)
 
     def test_list_tasks_for_project(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         project = Project.objects.create(owner=owner, name="Project")
@@ -33,7 +33,7 @@ class TestTaskAPI:
         assert len(response.data["data"]) == 2
 
     def test_create_task(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         project = Project.objects.create(owner=owner, name="Project")
@@ -48,7 +48,7 @@ class TestTaskAPI:
         assert response.data["data"]["title"] == "New Task"
 
     def test_get_task_detail(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         project = Project.objects.create(owner=owner, name="Project")
@@ -62,7 +62,7 @@ class TestTaskAPI:
         assert response.data["data"]["id"] == str(task.id)
 
     def test_update_task(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         project = Project.objects.create(owner=owner, name="Project")
@@ -78,7 +78,7 @@ class TestTaskAPI:
         assert response.data["data"]["title"] == "Updated"
 
     def test_delete_task(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
 
         project = Project.objects.create(owner=owner, name="Project")
@@ -94,8 +94,8 @@ class TestTaskAPI:
         assert task.is_active is False
 
     def test_task_permission_denied(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        other = User.objects.create_user(email="other@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
         self.authenticate(other)
 
         project = Project.objects.create(owner=owner, name="Project")
@@ -108,8 +108,8 @@ class TestTaskAPI:
         assert response.status_code == 403
 
     def test_assigned_to_me_tasks(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        assignee = User.objects.create_user(email="assignee@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        assignee = User.objects.create_user(email="assignee@test.com", clerk_id="user_456")
         self.authenticate(assignee)
 
         project = Project.objects.create(owner=owner, name="Project")

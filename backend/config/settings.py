@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'core.apps.CoreConfig',
     'project',
-    'tasks'    
+    'tasks',
+    'health.apps.HealthConfig',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +90,7 @@ DATABASES = {
 }
 
 DATABASES["default"]["TEST"] = {
-    "NAME": os.getenv("POSTGRES_TEST_DB", "test_" + DATABASES["default"]["NAME"])
+    "NAME": os.getenv("POSTGRES_TEST_DB", "test_" + (DATABASES["default"]["NAME"] or "tenguin"))
 }
 
 # Password validation

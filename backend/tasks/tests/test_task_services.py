@@ -17,7 +17,7 @@ User = get_user_model()
 class TestTaskService:
 
     def test_create_task(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         project = Project.objects.create(owner=owner, name="Project")
 
         task = TaskService.create_task(
@@ -34,8 +34,8 @@ class TestTaskService:
         assert task.assignee is None
 
     def test_create_task_with_assignee(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        assignee = User.objects.create_user(email="assignee@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        assignee = User.objects.create_user(email="assignee@test.com", clerk_id="user_456")
         project = Project.objects.create(owner=owner, name="Project")
 
         task = TaskService.create_task(
@@ -43,14 +43,14 @@ class TestTaskService:
             project_id=project.id,
             title="Task",
             description="",
-            assignee=assignee.id,
+            assignee=assignee,
         )
 
         assert task.assignee == assignee
 
     def test_create_task_permission_denied(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        other = User.objects.create_user(email="other@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
         project = Project.objects.create(owner=other, name="Project")
 
         with pytest.raises(PermissionException):
@@ -63,7 +63,7 @@ class TestTaskService:
             )
 
     def test_get_task_for_owner_success(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         project = Project.objects.create(owner=owner, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
@@ -75,17 +75,17 @@ class TestTaskService:
         assert result == task
 
     def test_get_task_for_owner_not_found(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
 
-        with pytest.raises(NotFoundException):
+        with pytest.raises(PermissionException):
             TaskService.get_task_for_owner(
                 owner=owner,
                 task_id="00000000-0000-0000-0000-000000000000",
             )
 
     def test_get_task_for_owner_permission_denied(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        other = User.objects.create_user(email="other@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
 
         project = Project.objects.create(owner=other, name="Project")
         task = Task.objects.create(project=project, title="Task")
@@ -97,7 +97,7 @@ class TestTaskService:
             )
 
     def test_update_task(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         project = Project.objects.create(owner=owner, name="Project")
         task = Task.objects.create(project=project, title="Old")
 
@@ -113,7 +113,7 @@ class TestTaskService:
         assert updated.description == "Updated"
 
     def test_delete_task_soft_delete(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         project = Project.objects.create(owner=owner, name="Project")
         task = Task.objects.create(project=project, title="Task")
 

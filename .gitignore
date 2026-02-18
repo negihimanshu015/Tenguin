@@ -116,3 +116,5 @@ yarn-error.log
 .tmp/
 .vscode-test/
 .nyc_output/
+
+.agent/

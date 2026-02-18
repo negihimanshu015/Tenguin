@@ -15,8 +15,8 @@ User = get_user_model()
 class TestProjectSelectors:
 
     def test_get_active_projects_for_owner_returns_only_owner_projects(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        other = User.objects.create_user(email="other@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
 
         Project.objects.create(owner=owner, name="Owner Project")
         Project.objects.create(owner=other, name="Other Project")
@@ -27,7 +27,7 @@ class TestProjectSelectors:
         assert projects.first().owner == owner
 
     def test_get_active_projects_excludes_soft_deleted(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
 
         project = Project.objects.create(owner=owner, name="Active Project")
         deleted_project = Project.objects.create(owner=owner, name="Deleted Project")
@@ -39,7 +39,7 @@ class TestProjectSelectors:
         assert deleted_project not in projects
 
     def test_get_active_project_by_id_returns_project_for_owner(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
 
         project = Project.objects.create(owner=owner, name="Project")
 
@@ -51,8 +51,8 @@ class TestProjectSelectors:
         assert result == project
 
     def test_get_active_project_by_id_returns_none_for_other_owner(self):
-        owner = User.objects.create_user(email="owner@test.com")
-        other = User.objects.create_user(email="other@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
+        other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
 
         project = Project.objects.create(owner=other, name="Project")
 
@@ -64,7 +64,7 @@ class TestProjectSelectors:
         assert result is None
 
     def test_get_active_project_by_id_returns_none_if_soft_deleted(self):
-        owner = User.objects.create_user(email="owner@test.com")
+        owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
 
         project = Project.objects.create(owner=owner, name="Project")
         project.soft_delete()

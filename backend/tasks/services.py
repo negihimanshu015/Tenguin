@@ -1,7 +1,7 @@
 from django.db import transaction
 from core.exceptions import (
-    ValidationExceptions,
-    PermissionExceptions,
+    ValidationException,
+    PermissionException,
 )
 from tasks.models import Task
 from project.services import ProjectService
@@ -14,7 +14,7 @@ class TaskService:
     def create_task(*, owner, project_id, title, description="", assignee=None):
         title = title.strip()
         if not title:
-            raise ValidationExceptions("Task title cannot be empty")
+            raise ValidationException("Task title cannot be empty")
 
         project = ProjectService.get_project_for_owner(
             owner=owner,
@@ -47,7 +47,7 @@ class TaskService:
         if title is not None:
             title = title.strip()
             if not title:
-                raise ValidationExceptions("Task title cannot be empty")
+                raise ValidationException("Task title cannot be empty")
             task.title = title
 
         if description is not None:
@@ -71,7 +71,7 @@ class TaskService:
                 is_active=True,
             )
         except Task.DoesNotExist:
-            raise PermissionExceptions  ("Task not found or access denied")
+            raise PermissionException("Task not found or access denied")
 
     @staticmethod
     @transaction.atomic
