@@ -11,7 +11,7 @@ class TaskService:
 
     @staticmethod
     @transaction.atomic
-    def create_task(*, owner, project_id, title, description=""):
+    def create_task(*, owner, project_id, title, description="", assignee=None):
         title = title.strip()
         if not title:
             raise ValidationExceptions("Task title cannot be empty")
@@ -25,6 +25,7 @@ class TaskService:
             project=project,
             title=title,
             description=description,
+            assignee=assignee,
         )
 
     @staticmethod

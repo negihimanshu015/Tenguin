@@ -24,7 +24,7 @@ class ProjectService:
     @staticmethod
     def get_project_for_owner(*, owner, project_id):
         try:
-            return Project.objects.get(
+            return Project.objects.get( 
                 id=project_id,
                 owner=owner,
                 is_active=True,
