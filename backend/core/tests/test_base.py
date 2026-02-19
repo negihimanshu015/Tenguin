@@ -27,7 +27,7 @@ class TestBaseModel:
     def test_uuid(self):
         obj = TestModel.objects.create(name="test")
         assert obj.id is not None
-        assert isinstance(obj.id, type(obj.id))
+        assert obj.id is not None
     
     def test_created(self):
         obj = TestModel.objects.create(name="test")

@@ -24,7 +24,7 @@ class BaseModel(models.Model):
     
     def restore(self):
         self.is_active=True
-        self.deleted=None
+        self.deleted_at=None
         self.save(update_fields=["is_active", "deleted_at", "updated"])
 
     def __str__(self):
