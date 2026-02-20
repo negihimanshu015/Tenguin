@@ -1,9 +1,7 @@
 """
 Django settings for config project.
 """
-import os
-import sys
-from pathlib import Path
+from config.env import env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,12 +10,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#^*f1r=%%7!r2n^9fbht&q$+w*u=+8am@liaxhw8g3gm72_^wq'
+SECRET_KEY = env.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.DEBUG
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.ALLOWED_HOSTS
 
 
 # Application definition
@@ -72,16 +70,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB'),
-        'USER': os.environ.get('POSTGRES_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
-        'PORT': os.environ.get('POSTGRES_PORT', 5432),
+        'NAME': env.POSTGRES_DB,
+        'USER': env.POSTGRES_USER,
+        'PASSWORD': env.POSTGRES_PASSWORD,
+        'HOST': env.POSTGRES_HOST,
+        'PORT': env.POSTGRES_PORT,
     }
 }
 
 DATABASES["default"]["TEST"] = {
-    "NAME": os.getenv("POSTGRES_TEST_DB", "test_" + (DATABASES["default"]["NAME"] or "tenguin"))
+    "NAME": env.POSTGRES_TEST_DB or f"test_{env.POSTGRES_DB}"
 }
 
 # Password validation
@@ -139,8 +137,8 @@ REST_FRAMEWORK = {
     },
 }
 
-CLERK_ISSUER = os.getenv("CLERK_ISSUER")  
-CLERK_AUDIENCE = os.getenv("CLERK_AUDIENCE")  
+CLERK_ISSUER = env.CLERK_ISSUER
+CLERK_AUDIENCE = env.CLERK_AUDIENCE
 CLERK_AUTO_CREATE_LOCAL_USER = True
 
 CACHES = {

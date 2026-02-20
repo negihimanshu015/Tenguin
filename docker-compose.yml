@@ -3,9 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: django_tenguin
-    command: >
-      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    container_name: django_tenguin    
     volumes:
       - ./backend:/app/backend
     ports:  
