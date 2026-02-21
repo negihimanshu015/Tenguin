@@ -1,6 +1,6 @@
+from core.models.base import BaseModel
 from django.conf import settings
 from django.db import models
-from core.models.base import BaseModel
 
 
 class Project(BaseModel):

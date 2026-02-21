@@ -1,6 +1,11 @@
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from django.db import models
 from core.models.base import BaseModel
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
+from django.db import models
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, clerk_id, password=None, **extra_fields):
@@ -28,7 +33,7 @@ class UserManager(BaseUserManager):
             raise ValueError("Superuser must have is_superuser=True")
 
         return self.create_user(email, clerk_id, password, **extra_fields)
-    
+
 
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     clerk_id = models.CharField(max_length=50, unique=True)
@@ -47,4 +52,4 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.email}({self.clerk_id})"
-    
+

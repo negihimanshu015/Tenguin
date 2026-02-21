@@ -1,6 +1,8 @@
 """
 Django settings for config project.
 """
+from pathlib import Path
+
 from config.env import env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -86,7 +88,9 @@ DATABASES["default"]["TEST"] = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+        ),
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
@@ -125,7 +129,7 @@ REST_FRAMEWORK = {
     ],
      "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
-    ],    
+    ],
     "EXCEPTION_HANDLER": "core.handlers.drf_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "core.pagination.DefaultPagination",
     "PAGE_SIZE": 10,

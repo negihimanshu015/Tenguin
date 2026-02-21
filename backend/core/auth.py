@@ -1,14 +1,13 @@
 import json
-import requests
-import jwt
 
+import jwt
+import requests
+from core.services import user_services
 from django.conf import settings
-from django.core.cache import cache
-from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-from core.services import user_services
 
 JWKS_CACHE_KEY = "clerk_jwks"
 JWKS_CACHE_TTL = 60 * 60
@@ -21,7 +20,7 @@ def _get_jwks(issuer: str):
 
     if jwks:
         return jwks
-    
+
     response = requests.get(_jwks_url(issuer), timeout=10)
     response.raise_for_status()
     jwks = response.json()
@@ -34,20 +33,20 @@ def _get_public_key(token:str, issuer:str):
     kid = unverified.get("kid")
     if not kid:
         raise AuthenticationFailed("Invalid header token")
-    
+
     jwks = _get_jwks(issuer)
 
     for jwk in jwks.get("keys", []):
         if jwk.get("kid") == kid:
             return jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
-    
+
     cache.delete(JWKS_CACHE_KEY)
     jwks = _get_jwks(issuer)
 
     for jwk in jwks.get("keys", []):
         if jwk.get("kid") == kid:
             return jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(jwk))
-    
+
     raise AuthenticationFailed("Sighning key invalid")
 
 class ClerkAuthentication(BaseAuthentication):
@@ -82,34 +81,33 @@ class ClerkAuthentication(BaseAuthentication):
 
             payload = jwt.decode(token, **token_args)
 
-        except Exception as e   :
-            raise AuthenticationFailed(str(e))
-        
+        except Exception as e:
+            raise AuthenticationFailed(str(e)) from e
+
         clerk_id = payload.get("sub")
 
         if not clerk_id:
             raise AuthenticationFailed("Failed to get clerk id")
-        
+
         User = get_user_model()
 
         try:
             user = User.objects.get(clerk_id = clerk_id)
-        
+
         except User.DoesNotExist:
             user = self._auto_create_user(User, clerk_id, payload)
 
         return (user, token)
-    
+
 
     def _auto_create_user(self, User, clerk_id, payload):
         try:
             return user_services.create_user(clerk_id=clerk_id, payload=payload)
-        
+
         except Exception as e:
-            raise AuthenticationFailed(str(e))
+            raise AuthenticationFailed(str(e)) from e
 
 
 
- 
 
- 
+

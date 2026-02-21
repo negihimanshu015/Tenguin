@@ -1,14 +1,11 @@
 import pytest
-
+from core.exceptions import (
+    ConflictException,
+    PermissionException,
+)
 from django.contrib.auth import get_user_model
-
 from project.models import Project
 from project.services import ProjectService
-from core.exceptions import (
-    NotFoundException,
-    PermissionException,
-    ConflictException,
-)
 
 User = get_user_model()
 

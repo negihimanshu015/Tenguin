@@ -1,8 +1,9 @@
 import logging
-from rest_framework.views import exception_handler
-from rest_framework.response import Response
-from rest_framework import status
+
 from core.exceptions import AppException
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import exception_handler
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ def drf_exception_handler(exc, context):
             {"message": response.data.get("detail", "An error occurred.")},
             status=response.status_code
         )
-    
+
     logger.exception("Unhandled exception", exc_info=exc)
 
     return Response(

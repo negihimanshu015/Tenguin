@@ -1,9 +1,9 @@
-from django.db import transaction, IntegrityError
 from core.exceptions import (
-    ValidationException,
-    PermissionException,
     ConflictException,
+    PermissionException,
+    ValidationException,
 )
+from django.db import IntegrityError, transaction
 from project.models import Project
 
 
@@ -22,19 +22,19 @@ class ProjectService:
                 name=name,
                 description=description,
             )
-        except IntegrityError:
-            raise ConflictException("Project with this name already exists")
+        except IntegrityError as err:
+            raise ConflictException("Project with this name already exists") from err
 
     @staticmethod
     def get_project_for_owner(*, owner, project_id):
         try:
-            return Project.objects.get( 
+            return Project.objects.get(
                 id=project_id,
                 owner=owner,
                 is_active=True,
             )
         except Project.DoesNotExist:
-            raise PermissionException("Project not found or access denied")
+            raise PermissionException("Project not found or access denied") from None
 
     @staticmethod
     @transaction.atomic

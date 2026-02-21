@@ -1,14 +1,11 @@
 import pytest
-
+from core.exceptions import (
+    PermissionException,
+)
 from django.contrib.auth import get_user_model
-
 from project.models import Project
 from tasks.models import Task
 from tasks.services import TaskService
-from core.exceptions import (
-    NotFoundException,
-    PermissionException,
-)
 
 User = get_user_model()
 
@@ -35,7 +32,9 @@ class TestTaskService:
 
     def test_create_task_with_assignee(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
-        assignee = User.objects.create_user(email="assignee@test.com", clerk_id="user_456")
+        assignee = User.objects.create_user(
+            email="assignee@test.com", clerk_id="user_456"
+        )
         project = Project.objects.create(owner=owner, name="Project")
 
         task = TaskService.create_task(

@@ -1,9 +1,7 @@
 import pytest
-
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-
 from project.models import Project
+from rest_framework.test import APIClient
 from tasks.models import Task
 
 User = get_user_model()
@@ -109,7 +107,9 @@ class TestTaskAPI:
 
     def test_assigned_to_me_tasks(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
-        assignee = User.objects.create_user(email="assignee@test.com", clerk_id="user_456")
+        assignee = User.objects.create_user(
+            email="assignee@test.com", clerk_id="user_456"
+        )
         self.authenticate(assignee)
 
         project = Project.objects.create(owner=owner, name="Project")

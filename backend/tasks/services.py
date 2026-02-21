@@ -1,10 +1,10 @@
-from django.db import transaction
 from core.exceptions import (
-    ValidationException,
     PermissionException,
+    ValidationException,
 )
-from tasks.models import Task
+from django.db import transaction
 from project.services import ProjectService
+from tasks.models import Task
 
 
 class TaskService:
@@ -71,7 +71,7 @@ class TaskService:
                 is_active=True,
             )
         except Task.DoesNotExist:
-            raise PermissionException("Task not found or access denied")
+            raise PermissionException("Task not found or access denied") from None
 
     @staticmethod
     @transaction.atomic

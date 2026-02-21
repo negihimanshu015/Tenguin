@@ -1,12 +1,10 @@
 import pytest
-
 from django.contrib.auth import get_user_model
-
 from project.models import Project
 from tasks.models import Task
 from tasks.selectors import (
-    get_active_tasks,
     get_active_task_by_id,
+    get_active_tasks,
     get_active_tasks_assigned_to_user,
 )
 
@@ -87,7 +85,9 @@ class TestTaskSelectors:
 
     def test_get_active_tasks_assigned_to_user(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
-        assignee = User.objects.create_user(email="assignee@test.com", clerk_id="user_456")
+        assignee = User.objects.create_user(
+            email="assignee@test.com", clerk_id="user_456"
+        )
 
         project = Project.objects.create(owner=owner, name="Project")
 

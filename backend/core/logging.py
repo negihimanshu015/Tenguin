@@ -1,7 +1,9 @@
+import datetime
 import json
 import logging
-import datetime
+
 from .context import get_correlation_id
+
 
 class CorrelationIdFilter(logging.Filter):
     """
@@ -25,7 +27,7 @@ class JSONFormatter(logging.Formatter):
             "line_number": record.lineno,
             "correlation_id": getattr(record, "correlation_id", None),
         }
-        
+
         # safely add extra fields that might have been passed
         if hasattr(record, "status_code"):
             log_data["status_code"] = record.status_code
@@ -33,7 +35,7 @@ class JSONFormatter(logging.Formatter):
             log_data["method"] = record.method
         if hasattr(record, "duration"):
             log_data["duration"] = record.duration
-            
+
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
 

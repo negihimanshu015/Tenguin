@@ -1,5 +1,4 @@
 import multiprocessing
-import os
 
 # Binding
 bind = "0.0.0.0:8000"
@@ -16,7 +15,7 @@ keepalive = 2
 
 # Logging
 accesslog = "-"
-errorlog = "-" 
+errorlog = "-"
 loglevel = "info"
 
 # Security & Process Management

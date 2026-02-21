@@ -1,6 +1,6 @@
+from core.views.auth_test import AuthDebugView
 from django.contrib import admin
 from django.urls import include, path
-from core.views.auth_test import AuthDebugView
 
 urlpatterns = [
     path("admin/", admin.site.urls),

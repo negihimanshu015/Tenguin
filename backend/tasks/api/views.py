@@ -1,24 +1,20 @@
-from rest_framework.views import APIView
-
-from tasks.selectors import (
-    get_active_tasks,
-    get_active_task_by_id,
-    get_active_tasks_assigned_to_user,
-)
-from tasks.services import TaskService
-from tasks.permissions import IsTaskProjectOwner
-
-from tasks.serializers.task_list import TaskListSerializer
-from tasks.serializers.task_detail import TaskDetailSerializer
-from tasks.serializers.task_write import TaskWriteSerializer
-
 from core.pagination import DefaultPagination
 from core.response import (
-    success,
     created,
-    updated,
     deleted,
+    success,
+    updated,
 )
+from rest_framework.views import APIView
+from tasks.permissions import IsTaskProjectOwner
+from tasks.selectors import (
+    get_active_tasks,
+    get_active_tasks_assigned_to_user,
+)
+from tasks.serializers.task_detail import TaskDetailSerializer
+from tasks.serializers.task_list import TaskListSerializer
+from tasks.serializers.task_write import TaskWriteSerializer
+from tasks.services import TaskService
 
 
 class TaskListCreateView(APIView):

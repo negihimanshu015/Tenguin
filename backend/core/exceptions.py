@@ -1,5 +1,6 @@
 from typing import Optional
 
+
 class AppException(Exception):
     default_mssg = "An error occurred."
     status_code = 500

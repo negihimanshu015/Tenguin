@@ -1,5 +1,6 @@
-from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.db import transaction
+
 
 def create_user(*, clerk_id: str, payload: dict):
     User = get_user_model()

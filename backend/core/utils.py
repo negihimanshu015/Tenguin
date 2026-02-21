@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
+
 def gen_uuid():
     return str(uuid.uuid4())
 
@@ -15,7 +16,7 @@ def parse_int(val):
         return int(val)
     except (TypeError, ValueError):
         return None
-    
+
 def clean_str(val):
     if isinstance(val,str):
         return val.strip()

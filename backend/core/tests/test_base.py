@@ -1,8 +1,7 @@
 import pytest
-from django.utils import timezone
+from core.models.base import BaseModel
 from django.db import models
 
-from core.models.base import BaseModel
 
 class TestModel(BaseModel):
     name = models.CharField(max_length=50)
@@ -28,7 +27,7 @@ class TestBaseModel:
         obj = TestModel.objects.create(name="test")
         assert obj.id is not None
 
-    
+
     def test_created(self):
         obj = TestModel.objects.create(name="test")
         assert obj.created is not None
@@ -42,18 +41,18 @@ class TestBaseModel:
         obj.save()
 
         assert obj.updated > old
-    
+
     def test_deleted(self):
         obj = TestModel.objects.create(name="test")
         obj.soft_delete()
 
-        assert obj.is_active == False
+        assert obj.is_active is False
         assert obj.deleted_at is not None
 
     def test_restored(self):
         obj = TestModel.objects.create(name="test")
         obj.restore()
 
-        assert obj.is_active == True
+        assert obj.is_active is True
         assert obj.deleted_at is None
 

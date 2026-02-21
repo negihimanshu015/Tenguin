@@ -1,5 +1,4 @@
 from django.urls import path
-
 from health.api.views import HealthCheckView
 
 urlpatterns = [

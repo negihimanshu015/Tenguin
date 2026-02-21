@@ -1,8 +1,8 @@
 from django.db import connections
 from django.db.utils import OperationalError
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
 class HealthCheckView(APIView):

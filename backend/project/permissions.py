@@ -1,5 +1,5 @@
-from rest_framework.permissions import BasePermission
 from project.models import Project
+from rest_framework.permissions import BasePermission
 
 
 class IsProjectOwner(BasePermission):

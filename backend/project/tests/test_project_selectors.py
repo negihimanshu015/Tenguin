@@ -1,7 +1,5 @@
 import pytest
-
 from django.contrib.auth import get_user_model
-
 from project.models import Project
 from project.selectors import (
     get_active_project,

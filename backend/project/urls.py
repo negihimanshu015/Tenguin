@@ -1,7 +1,8 @@
 from django.urls import path
+
 from .api.views import (
-    ProjectListCreateView,
     ProjectDetailView,
+    ProjectListCreateView,
 )
 
 app_name = "projects"
