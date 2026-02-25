@@ -1,4 +1,5 @@
 from core.views.auth_test import AuthDebugView
+from core.views.user import MeView
 from django.contrib import admin
 from django.urls import include, path
 
@@ -9,5 +10,6 @@ urlpatterns = [
     path("api/health/", include("health.urls")),
 
     path("api/v1/projects/", include("project.urls")),
+    path("api/v1/users/me/", MeView.as_view(), name="me"),
     path("api/v1/", include("tasks.urls")),
 ]

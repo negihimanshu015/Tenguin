@@ -11,12 +11,28 @@ class AppSettings(BaseSettings):
         extra='ignore'
     )
 
+    @classmethod
+    def _parse_list(cls, value):
+        if isinstance(value, str):
+            return [v.strip() for v in value.split(',') if v.strip()]
+        return value
+
+    @property
+    def validated_allowed_hosts(self) -> List[str]:
+        return self._parse_list(self.ALLOWED_HOSTS)
+
+    @property
+    def validated_cors_origins(self) -> List[str]:
+        return self._parse_list(self.CORS_ALLOWED_ORIGINS)
+
     # Security
     SECRET_KEY: str = Field(alias='DJANGO_SECRET_KEY')
     DEBUG: bool = Field(default=False, alias='DJANGO_DEBUG')
-    ALLOWED_HOSTS: List[str] = Field(default_factory=list, alias='DJANGO_ALLOWED_HOSTS')
+    ALLOWED_HOSTS: str = Field(default="", alias='DJANGO_ALLOWED_HOSTS')
 
-    # Database
+    # CORS
+    CORS_ALLOWED_ORIGINS: str = Field(default="", alias='CORS_ALLOWED_ORIGINS')
+    CORS_ALLOW_ALL_ORIGINS: bool = Field(default=False, alias='CORS_ALLOW_ALL_ORIGINS')
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str

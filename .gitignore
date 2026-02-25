@@ -118,3 +118,5 @@ yarn-error.log
 .nyc_output/
 
 .agent/
+
+.ruff_cache/

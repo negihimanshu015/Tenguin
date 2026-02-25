@@ -24,7 +24,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONBUFFERED=1 \
     PROJECT_NAME=Tenguin
 
-ARG APP_HOME=/app/backend
+ARG APP_HOME=/app
 ARG APP_USER=appuser
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN groupadd -r ${APP_USER} && useradd -r -g ${APP_USER} ${APP_USER}
 
-WORKDIR ${APP_HOME}
+WORKDIR /app
 
 COPY --from=builder /app/wheels /wheels
 COPY --from=builder /app/requirements.txt .
@@ -48,4 +48,4 @@ USER ${APP_USER}
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--config", "backend/gunicorn.conf.py", "config.wsgi:application"]
+CMD ["gunicorn", "--config", "backend/gunicorn.conf.py", "--chdir", "backend", "config.wsgi:application"]

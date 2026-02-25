@@ -17,7 +17,7 @@ SECRET_KEY = env.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.DEBUG
 
-ALLOWED_HOSTS = env.ALLOWED_HOSTS
+ALLOWED_HOSTS = env.validated_allowed_hosts
 
 
 # Application definition
@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'core.apps.CoreConfig',
     'project',
     'tasks',
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'core.middleware.RequestCorrelationMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -140,6 +142,9 @@ REST_FRAMEWORK = {
         "authenticated_user": "1000/day",
     },
 }
+
+CORS_ALLOWED_ORIGINS = env.validated_cors_origins
+CORS_ALLOW_ALL_ORIGINS = env.CORS_ALLOW_ALL_ORIGINS
 
 CLERK_ISSUER = env.CLERK_ISSUER
 CLERK_AUDIENCE = env.CLERK_AUDIENCE
