@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'project',
     'tasks',
     'health.apps.HealthConfig',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -140,6 +141,21 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {
         "authenticated_user": "1000/day",
+    },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Tenguin API",
+    "DESCRIPTION": "SaaS-Style Task Management Platform",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_PATCH": True,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
     },
 }
 
