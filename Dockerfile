@@ -42,10 +42,15 @@ RUN pip install --no-cache /wheels/*
 
 COPY . .
 
+# Copy scripts and set permissions
+RUN chmod +x /app/backend/scripts/entrypoint.sh
+
 RUN chown -R ${APP_USER}:${APP_USER} /app
 
 USER ${APP_USER}
 
 EXPOSE 8000
+
+ENTRYPOINT ["/app/backend/scripts/entrypoint.sh"]
 
 CMD ["gunicorn", "--config", "backend/gunicorn.conf.py", "--chdir", "backend", "config.wsgi:application"]
