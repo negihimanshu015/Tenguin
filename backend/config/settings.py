@@ -3,6 +3,7 @@ Django settings for config project.
 """
 from pathlib import Path
 
+import dj_database_url
 from config.env import env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'core.middleware.RequestCorrelationMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -83,6 +85,13 @@ DATABASES = {
     }
 }
 
+if env.DATABASE_URL:
+    DATABASES['default'] = dj_database_url.config(
+        default=env.DATABASE_URL,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+
 DATABASES["default"]["TEST"] = {
     "NAME": env.POSTGRES_TEST_DB or f"test_{env.POSTGRES_DB}"
 }
@@ -121,6 +130,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 

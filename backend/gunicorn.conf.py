@@ -1,7 +1,8 @@
 import multiprocessing
+import os
 
 # Binding
-bind = "0.0.0.0:8000"
+bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
 
 # Worker process configuration
 # Formula: (2 x $num_cores) + 1

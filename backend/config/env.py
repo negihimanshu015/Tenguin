@@ -44,6 +44,8 @@ class AppSettings(BaseSettings):
     CLERK_ISSUER: Optional[str] = None
     CLERK_AUDIENCE: Optional[str] = None
 
+    DATABASE_URL: Optional[str] = Field(default=None, alias='DATABASE_URL')
+
     # App
     PROJECT_NAME: str = "Tenguin"
 
