@@ -67,7 +67,7 @@ htmlcov/
 *.db
 db.sqlite3
 /backend/db.sqlite3
-/staticfiles/
+/backend/staticfiles/
 /static/admin/
 /static/rest_framework/
 /media/
