@@ -48,6 +48,10 @@ class AppSettings(BaseSettings):
     CLERK_ISSUER: Optional[str] = None
     CLERK_AUDIENCE: Optional[str] = None
 
+    # Sentry
+    SENTRY_DSN: Optional[str] = Field(default=None, alias="SENTRY_DSN")
+    SENTRY_ENVIRONMENT: str = Field(default="development", alias="SENTRY_ENVIRONMENT")
+
     # App
     PROJECT_NAME: str = "Tenguin"
 

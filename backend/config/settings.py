@@ -4,7 +4,18 @@ Django settings for config project.
 from pathlib import Path
 
 import dj_database_url
+import sentry_sdk
 from config.env import env
+from sentry_sdk.integrations.django import DjangoIntegration
+
+if env.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=env.SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment=env.SENTRY_ENVIRONMENT,
+        traces_sample_rate=1.0,
+        send_default_pii=True,
+    )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
