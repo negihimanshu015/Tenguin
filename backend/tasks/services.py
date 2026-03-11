@@ -67,7 +67,7 @@ class TaskService:
         try:
             return Task.objects.select_related("project").get(
                 id=task_id,
-                project__owner=owner,
+                project__workspace__owner=owner,
                 is_active=True,
             )
         except Task.DoesNotExist:

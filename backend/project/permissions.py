@@ -2,7 +2,7 @@ from project.models import Project
 from rest_framework.permissions import BasePermission
 
 
-class IsProjectOwner(BasePermission):
+class IsProjectWorkspaceOwner(BasePermission):
     message = "Permission Denied"
 
     def has_permission(self, request, view):
@@ -11,4 +11,4 @@ class IsProjectOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         if not isinstance(obj, Project):
             return False
-        return obj.owner_id == request.user.id
+        return obj.workspace.owner_id == request.user.id

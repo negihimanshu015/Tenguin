@@ -5,20 +5,26 @@ from core.exceptions import (
 )
 from django.db import IntegrityError, transaction
 from project.models import Project
+from workspace.services import WorkspaceService
 
 
 class ProjectService:
 
     @staticmethod
     @transaction.atomic
-    def create_project(*, owner, name, description=""):
+    def create_project(*, owner, workspace_id, name, description=""):
         name = name.strip()
         if not name:
             raise ValidationException("Project name cannot be empty")
 
+        workspace = WorkspaceService.get_workspace_for_owner(
+            owner=owner,
+            workspace_id=workspace_id,
+        )
+
         try:
              return Project.objects.create(
-                owner=owner,
+                workspace=workspace,
                 name=name,
                 description=description,
             )
@@ -28,9 +34,9 @@ class ProjectService:
     @staticmethod
     def get_project_for_owner(*, owner, project_id):
         try:
-            return Project.objects.get(
+            return Project.objects.select_related("workspace").get(
                 id=project_id,
-                owner=owner,
+                workspace__owner=owner,
                 is_active=True,
             )
         except Project.DoesNotExist:

@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from project.models import Project
 from tasks.models import Task
 from tasks.services import TaskService
+from workspace.models import Workspace
 
 User = get_user_model()
 
@@ -15,7 +16,8 @@ class TestTaskService:
 
     def test_create_task(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
-        project = Project.objects.create(owner=owner, name="Project")
+        ws = Workspace.objects.create(owner=owner, name="WS")
+        project = Project.objects.create(workspace=ws, name="Project")
 
         task = TaskService.create_task(
             owner=owner,
@@ -35,7 +37,8 @@ class TestTaskService:
         assignee = User.objects.create_user(
             email="assignee@test.com", clerk_id="user_456"
         )
-        project = Project.objects.create(owner=owner, name="Project")
+        ws = Workspace.objects.create(owner=owner, name="WS")
+        project = Project.objects.create(workspace=ws, name="Project")
 
         task = TaskService.create_task(
             owner=owner,
@@ -50,7 +53,8 @@ class TestTaskService:
     def test_create_task_permission_denied(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
-        project = Project.objects.create(owner=other, name="Project")
+        ws_other = Workspace.objects.create(owner=other, name="WS")
+        project = Project.objects.create(workspace=ws_other, name="Project")
 
         with pytest.raises(PermissionException):
             TaskService.create_task(
@@ -63,7 +67,8 @@ class TestTaskService:
 
     def test_get_task_for_owner_success(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
-        project = Project.objects.create(owner=owner, name="Project")
+        ws = Workspace.objects.create(owner=owner, name="WS")
+        project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
         result = TaskService.get_task_for_owner(
@@ -86,7 +91,8 @@ class TestTaskService:
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
 
-        project = Project.objects.create(owner=other, name="Project")
+        ws_other = Workspace.objects.create(owner=other, name="WS")
+        project = Project.objects.create(workspace=ws_other, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
         with pytest.raises(PermissionException):
@@ -97,7 +103,8 @@ class TestTaskService:
 
     def test_update_task(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
-        project = Project.objects.create(owner=owner, name="Project")
+        ws = Workspace.objects.create(owner=owner, name="WS")
+        project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Old")
 
         updated = TaskService.update_task(
@@ -113,7 +120,8 @@ class TestTaskService:
 
     def test_delete_task_soft_delete(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
-        project = Project.objects.create(owner=owner, name="Project")
+        ws = Workspace.objects.create(owner=owner, name="WS")
+        project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
         TaskService.delete_task(

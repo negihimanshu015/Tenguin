@@ -1,27 +1,27 @@
 from core.models.base import BaseModel
+from django.conf import settings
 from django.db import models
-from workspace.models import Workspace
 
 
-class Project(BaseModel):
-    workspace = models.ForeignKey(
-        Workspace,
+class Workspace(BaseModel):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name="projects",
+        related_name="workspaces",
     )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
     class Meta:
-        db_table = "projects"
+        db_table = "workspaces"
         indexes = [
-            models.Index(fields=["workspace"]),
+            models.Index(fields=["owner"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["workspace", "name"],
+                fields=["owner", "name"],
                 condition=models.Q(is_active=True),
-                name="unique_active_project_per_workspace",
+                name="unique_active_workspace_per_owner",
             )
         ]
 

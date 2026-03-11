@@ -12,7 +12,7 @@ exclude = [
     "migrations",
 ]
 
-line-length = 88
+line-length = 99
 
 
 [tool.ruff.lint]
@@ -36,3 +36,4 @@ unfixable = []
 
 [tool.ruff.lint.isort]
 known-first-party = ["backend"]
+

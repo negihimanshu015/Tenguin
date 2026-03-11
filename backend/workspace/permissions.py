@@ -1,14 +1,14 @@
 from rest_framework.permissions import BasePermission
-from tasks.models import Task
+from workspace.models import Workspace
 
 
-class IsTaskProjectOwner(BasePermission):
+class IsWorkspaceOwner(BasePermission):
     message = "Permission Denied"
 
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
-        if not isinstance(obj, Task):
+        if not isinstance(obj, Workspace):
             return False
-        return obj.project.workspace.owner_id == request.user.id
+        return obj.owner_id == request.user.id

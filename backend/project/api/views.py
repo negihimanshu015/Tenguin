@@ -6,7 +6,7 @@ from core.response import (
     success,
     updated,
 )
-from project.permissions import IsProjectOwner
+from project.permissions import IsProjectWorkspaceOwner
 from project.selectors import (
     get_active_project,
     get_active_project_by_id,
@@ -35,6 +35,7 @@ class ProjectListCreateView(APIView):
 
         project = ProjectService.create_project(
             owner=request.user,
+            workspace_id=serializer.validated_data["workspace_id"],
             name=serializer.validated_data["name"],
             description=serializer.validated_data.get("description", ""),
         )
@@ -45,7 +46,7 @@ class ProjectListCreateView(APIView):
 
 
 class ProjectDetailView(APIView):
-    permission_classes = [IsProjectOwner]
+    permission_classes = [IsProjectWorkspaceOwner]
 
     def get_object(self):
         project = get_active_project_by_id(

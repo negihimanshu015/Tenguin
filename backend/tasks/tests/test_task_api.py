@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from project.models import Project
 from rest_framework.test import APIClient
 from tasks.models import Task
+from workspace.models import Workspace
 
 User = get_user_model()
 
@@ -19,8 +20,9 @@ class TestTaskAPI:
     def test_list_tasks_for_project(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
         Task.objects.create(project=project, title="Task 1")
         Task.objects.create(project=project, title="Task 2")
 
@@ -33,8 +35,9 @@ class TestTaskAPI:
     def test_create_task(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
 
         response = self.client.post(
             f"/api/v1/projects/{project.id}/tasks/",
@@ -48,8 +51,9 @@ class TestTaskAPI:
     def test_get_task_detail(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
         response = self.client.get(
@@ -62,8 +66,9 @@ class TestTaskAPI:
     def test_update_task(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Old")
 
         response = self.client.put(
@@ -78,8 +83,9 @@ class TestTaskAPI:
     def test_delete_task(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
         response = self.client.delete(
@@ -95,8 +101,9 @@ class TestTaskAPI:
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
         self.authenticate(other)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
         response = self.client.get(
@@ -111,8 +118,9 @@ class TestTaskAPI:
             email="assignee@test.com", clerk_id="user_456"
         )
         self.authenticate(assignee)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
 
         Task.objects.create(
             project=project,

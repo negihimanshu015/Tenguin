@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'core.apps.CoreConfig',
+    'workspace',
     'project',
     'tasks',
     'health.apps.HealthConfig',

@@ -2,6 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from project.models import Project
 from rest_framework.test import APIClient
+from workspace.models import Workspace
 
 User = get_user_model()
 
@@ -18,9 +19,10 @@ class TestProjectAPI:
     def test_list_projects(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        Project.objects.create(owner=owner, name="Project 1")
-        Project.objects.create(owner=owner, name="Project 2")
+        Project.objects.create(workspace=ws, name="Project 1")
+        Project.objects.create(workspace=ws, name="Project 2")
 
         response = self.client.get("/api/v1/projects/")
 
@@ -31,10 +33,11 @@ class TestProjectAPI:
     def test_create_project(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
         response = self.client.post(
             "/api/v1/projects/",
-            data={"name": "New Project", "description": "Desc"},
+            data={"name": "New Project", "description": "Desc", "workspace_id": str(ws.id)},
             format="json",
         )
 
@@ -44,8 +47,9 @@ class TestProjectAPI:
     def test_get_project_detail(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
 
         response = self.client.get(f"/api/v1/projects/{project.id}/")
 
@@ -56,8 +60,9 @@ class TestProjectAPI:
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         other = User.objects.create_user(email="other@test.com", clerk_id="user_456")
         self.authenticate(other)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
 
         response = self.client.get(f"/api/v1/projects/{project.id}/")
 
@@ -66,8 +71,9 @@ class TestProjectAPI:
     def test_delete_project(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
         self.authenticate(owner)
+        ws = Workspace.objects.create(owner=owner, name="WS")
 
-        project = Project.objects.create(owner=owner, name="Project")
+        project = Project.objects.create(workspace=ws, name="Project")
 
         response = self.client.delete(f"/api/v1/projects/{project.id}/")
 

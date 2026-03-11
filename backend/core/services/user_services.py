@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from workspace.services import WorkspaceService
 
 
 def create_user(*, clerk_id: str, payload: dict):
@@ -12,4 +13,6 @@ def create_user(*, clerk_id: str, payload: dict):
     }
 
     with transaction.atomic():
-        return User.objects.create(**defaults)
+        user = User.objects.create(**defaults)
+        WorkspaceService.create_personal_workspace(owner=user)
+        return user
