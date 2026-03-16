@@ -120,3 +120,6 @@ yarn-error.log
 .agent/
 
 .ruff_cache/
+
+
+frontend/
