@@ -6,10 +6,9 @@ from core.response import (
     success,
     updated,
 )
-from project.permissions import IsProjectWorkspaceOwner
+from project.permissions import IsProjectWorkspaceAdmin
 from project.selectors import (
     get_active_project,
-    get_active_project_by_id,
 )
 from project.serializers.project_detail import ProjectDetailSerializer
 from project.serializers.project_list import ProjectListSerializer
@@ -21,7 +20,8 @@ from rest_framework.views import APIView
 class ProjectListCreateView(APIView):
 
     def get(self, request):
-        queryset = get_active_project(owner=request.user)
+        workspace_id = request.query_params.get("workspace_id")
+        queryset = get_active_project(user=request.user, workspace_id=workspace_id)
 
         paginator = DefaultPagination()
         page = paginator.paginate_queryset(queryset, request)
@@ -34,7 +34,7 @@ class ProjectListCreateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         project = ProjectService.create_project(
-            owner=request.user,
+            user=request.user,
             workspace_id=serializer.validated_data["workspace_id"],
             name=serializer.validated_data["name"],
             description=serializer.validated_data.get("description", ""),
@@ -46,15 +46,22 @@ class ProjectListCreateView(APIView):
 
 
 class ProjectDetailView(APIView):
-    permission_classes = [IsProjectWorkspaceOwner]
+    permission_classes = [IsProjectWorkspaceAdmin]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            from workspace.permissions import IsWorkspaceMember
+            return [IsWorkspaceMember()]
+        return super().get_permissions()
 
     def get_object(self):
-        project = get_active_project_by_id(
-            owner=self.request.user,
-            project_id=self.kwargs["project_id"],
+        # We use a custom fetch here instead of selector to ensure role check
+        project_id = self.kwargs["project_id"]
+        from project.services import ProjectService
+        project = ProjectService.get_project_for_user(
+            user=self.request.user,
+            project_id=project_id,
         )
-        if project is None:
-            return None
         self.check_object_permissions(self.request, project)
         return project
 
@@ -72,7 +79,7 @@ class ProjectDetailView(APIView):
         serializer.is_valid(raise_exception=True)
 
         project = ProjectService.update_project(
-            owner=request.user,
+            user=request.user,
             project_id=project_id,
             name=serializer.validated_data["name"],
             description=serializer.validated_data.get("description", ""),
@@ -84,7 +91,7 @@ class ProjectDetailView(APIView):
 
     def delete(self, request, project_id):
         ProjectService.delete_project(
-            owner=request.user,
+            user=request.user,
             project_id=project_id,
         )
         return deleted()

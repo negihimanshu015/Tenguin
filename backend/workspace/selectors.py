@@ -1,18 +1,20 @@
 from workspace.models import Workspace
 
 
-def get_active_workspaces(*, owner):
+def get_active_workspaces(*, user):
+    from django.db.models import Q
     return Workspace.objects.filter(
-        owner=owner,
+        Q(owner=user) | Q(memberships__user=user, memberships__is_active=True),
         is_active=True,
-    ).order_by("-created")
+    ).distinct().order_by("-created")
 
-def get_active_workspace_by_id(*, owner, workspace_id):
+def get_active_workspace_by_id(*, user, workspace_id):
+    from django.db.models import Q
     return Workspace.objects.filter(
+        Q(owner=user) | Q(memberships__user=user, memberships__is_active=True),
         id=workspace_id,
-        owner=owner,
         is_active=True,
-    ).first()
+    ).distinct().first()
 
 def get_workspace_members(*, user, workspace_id):
     from core.exceptions import PermissionException

@@ -4,6 +4,7 @@ from workspace.api.views import (
     WorkspaceListCreateView,
     WorkspaceMemberAddRemoveView,
     WorkspaceMemberListView,
+    WorkspaceMemberRoleChangeView,
 )
 
 urlpatterns = [
@@ -26,5 +27,10 @@ urlpatterns = [
         "<uuid:workspace_id>/members/manage/",
         WorkspaceMemberAddRemoveView.as_view(),
         name="workspace-members-manage",
+    ),
+    path(
+        "<uuid:workspace_id>/members/role/",
+        WorkspaceMemberRoleChangeView.as_view(),
+        name="workspace-members-role-change",
     ),
 ]

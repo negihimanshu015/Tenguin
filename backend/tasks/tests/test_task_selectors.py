@@ -28,7 +28,7 @@ class TestTaskSelectors:
         task1 = Task.objects.create(project=project, title="Task 1")
         Task.objects.create(project=other_project, title="Other Task")
 
-        tasks = get_active_tasks(owner=owner, project_id=project.id)
+        tasks = get_active_tasks(user=owner, project_id=project.id)
 
         assert tasks.count() == 1
         assert task1 in tasks
@@ -42,7 +42,7 @@ class TestTaskSelectors:
         deleted_task = Task.objects.create(project=project, title="Deleted Task")
         deleted_task.soft_delete()
 
-        tasks = get_active_tasks(owner=owner, project_id=project.id)
+        tasks = get_active_tasks(user=owner, project_id=project.id)
 
         assert active_task in tasks
         assert deleted_task not in tasks
@@ -55,7 +55,7 @@ class TestTaskSelectors:
         task = Task.objects.create(project=project, title="Task")
 
         result = get_active_task_by_id(
-            owner=owner,
+            user=owner,
             task_id=task.id,
         )
 
@@ -70,7 +70,7 @@ class TestTaskSelectors:
         task = Task.objects.create(project=project, title="Task")
 
         result = get_active_task_by_id(
-            owner=owner,
+            user=owner,
             task_id=task.id,
         )
 
@@ -85,7 +85,7 @@ class TestTaskSelectors:
         task.soft_delete()
 
         result = get_active_task_by_id(
-            owner=owner,
+            user=owner,
             task_id=task.id,
         )
 
@@ -108,7 +108,7 @@ class TestTaskSelectors:
         Task.objects.create(project=project, title="Unassigned Task")
 
         tasks = get_active_tasks_assigned_to_user(
-            owner=owner,
+            user=owner,
             assignee=assignee,
         )
 

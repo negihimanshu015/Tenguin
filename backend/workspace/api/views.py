@@ -6,7 +6,11 @@ from core.response import (
     updated,
 )
 from rest_framework.views import APIView
-from workspace.permissions import IsWorkspaceOwner
+from workspace.permissions import (
+    IsWorkspaceAdmin,
+    IsWorkspaceMember,
+    IsWorkspaceOwner,
+)
 from workspace.selectors import (
     get_active_workspaces,
     get_workspace_members,
@@ -22,7 +26,7 @@ class WorkspaceListCreateView(APIView):
 
     def get(self, request):
         queryset = get_active_workspaces(
-            owner=request.user,
+            user=request.user,
         )
 
         paginator = DefaultPagination()
@@ -36,7 +40,7 @@ class WorkspaceListCreateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         workspace = WorkspaceService.create_workspace(
-            owner=request.user,
+            user=request.user,
             name=serializer.validated_data["name"],
             description=serializer.validated_data.get("description", ""),
         )
@@ -47,11 +51,11 @@ class WorkspaceListCreateView(APIView):
 
 
 class WorkspaceDetailView(APIView):
-    permission_classes = [IsWorkspaceOwner]
+    permission_classes = [IsWorkspaceMember]
 
     def get(self, request, workspace_id):
-        workspace = WorkspaceService.get_workspace_for_owner(
-            owner=request.user,
+        workspace = WorkspaceService.get_workspace_for_user_with_role(
+            user=request.user,
             workspace_id=workspace_id,
         )
         return success(
@@ -63,7 +67,7 @@ class WorkspaceDetailView(APIView):
         serializer.is_valid(raise_exception=True)
 
         workspace = WorkspaceService.update_workspace(
-            owner=request.user,
+            user=request.user,
             workspace_id=workspace_id,
             name=serializer.validated_data.get("name"),
             description=serializer.validated_data.get("description"),
@@ -75,7 +79,7 @@ class WorkspaceDetailView(APIView):
 
     def delete(self, request, workspace_id):
         WorkspaceService.delete_workspace(
-            owner=request.user,
+            user=request.user,
             workspace_id=workspace_id,
         )
         return deleted()
@@ -93,7 +97,7 @@ class WorkspaceMemberListView(APIView):
 
 
 class WorkspaceMemberAddRemoveView(APIView):
-    permission_classes = [IsWorkspaceOwner]
+    permission_classes = [IsWorkspaceAdmin]
 
     def post(self, request, workspace_id):
         email = request.data.get("email")
@@ -102,13 +106,12 @@ class WorkspaceMemberAddRemoveView(APIView):
             raise ValidationException("Email is required")
 
         WorkspaceService.add_member(
-            owner=request.user,
+            user=request.user,
             workspace_id=workspace_id,
             email=email,
         )
-        return success(
-            data={"message": f"User {email} added successfully"},
-            status=201
+        return created(
+            data={"message": f"User {email} added successfully"}
         )
 
     def delete(self, request, workspace_id):
@@ -118,8 +121,26 @@ class WorkspaceMemberAddRemoveView(APIView):
             raise ValidationException("User ID is required")
 
         WorkspaceService.remove_member(
-            owner=request.user,
+            user=request.user,
             workspace_id=workspace_id,
             user_id=user_id,
         )
         return deleted()
+
+class WorkspaceMemberRoleChangeView(APIView):
+    permission_classes = [IsWorkspaceOwner]
+
+    def patch(self, request, workspace_id):
+        user_id = request.data.get("user_id")
+        role = request.data.get("role")
+        if not user_id or not role:
+            from core.exceptions import ValidationException
+            raise ValidationException("User ID and Role are required")
+
+        WorkspaceService.change_member_role(
+            user=request.user,
+            workspace_id=workspace_id,
+            user_id=user_id,
+            role=role,
+        )
+        return success(data={"message": "Role updated successfully"})

@@ -14,5 +14,5 @@ def create_user(*, clerk_id: str, payload: dict):
 
     with transaction.atomic():
         user = User.objects.create(**defaults)
-        WorkspaceService.create_personal_workspace(owner=user)
+        WorkspaceService.create_personal_workspace(user=user)
         return user

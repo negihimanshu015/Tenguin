@@ -4,26 +4,38 @@ from core.exceptions import (
     ValidationException,
 )
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 from project.models import Project
 from workspace.services import WorkspaceService
 
 
 class ProjectService:
+    @staticmethod
+    def deactivate_projects(*, workspace_id, deleted_at):
+        Project.objects.filter(
+            workspace_id=workspace_id,
+            is_active=True
+        ).update(
+            is_active=False,
+            deleted_at=deleted_at
+        )
 
     @staticmethod
     @transaction.atomic
-    def create_project(*, owner, workspace_id, name, description=""):
+    def create_project(*, user, workspace_id, name, description=""):
         name = name.strip()
         if not name:
             raise ValidationException("Project name cannot be empty")
 
-        workspace = WorkspaceService.get_workspace_for_owner(
-            owner=owner,
+        from workspace.models import WorkspaceMember
+        workspace = WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
             workspace_id=workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN,
         )
 
         try:
-             return Project.objects.create(
+            return Project.objects.create(
                 workspace=workspace,
                 name=name,
                 description=description,
@@ -32,22 +44,36 @@ class ProjectService:
             raise ConflictException("Project with this name already exists") from err
 
     @staticmethod
-    def get_project_for_owner(*, owner, project_id):
+    def get_project_for_user(*, user, project_id):
         try:
-            return Project.objects.select_related("workspace").get(
+            project = Project.objects.select_related("workspace").get(
                 id=project_id,
-                workspace__owner=owner,
                 is_active=True,
+                workspace__is_active=True,
             )
         except Project.DoesNotExist:
-            raise PermissionException("Project not found or access denied") from None
+            raise PermissionException("Project not found") from None
+
+        # Check workspace access
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=project.workspace_id,
+        )
+        return project
 
     @staticmethod
     @transaction.atomic
-    def update_project(*, owner, project_id, name=None, description=None):
-        project = ProjectService.get_project_for_owner(
-            owner=owner,
+    def update_project(*, user, project_id, name, description):
+        from workspace.models import WorkspaceMember
+        # Project update requires Admin role in workspace
+        project = ProjectService.get_project_for_user(
+            user=user,
             project_id=project_id,
+        )
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=project.workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN,
         )
 
         if name is not None:
@@ -64,11 +90,27 @@ class ProjectService:
 
     @staticmethod
     @transaction.atomic
-    def delete_project(*, owner, project_id):
-        project = ProjectService.get_project_for_owner(
-            owner=owner,
+    def delete_project(*, user, project_id):
+        from tasks.services import TaskService
+        from workspace.models import WorkspaceMember
+
+        # Project deletion requires Admin role in workspace
+        project = ProjectService.get_project_for_user(
+            user=user,
             project_id=project_id,
         )
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=project.workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN,
+        )
 
+        deleted_at = timezone.now()
+
+        # 1. Deactivate tasks
+        TaskService.deactivate_tasks(project_id=project_id, deleted_at=deleted_at)
+
+        # 2. Deactivate project
         project.is_active = False
-        project.save()
+        project.deleted_at = deleted_at
+        project.save(update_fields=["is_active", "deleted_at", "updated"])

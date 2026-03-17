@@ -6,7 +6,9 @@ from core.response import (
     updated,
 )
 from rest_framework.views import APIView
-from tasks.permissions import IsTaskProjectOwner
+from tasks.permissions import (
+    IsTaskProjectMember,
+)
 from tasks.selectors import (
     get_active_tasks,
     get_active_tasks_assigned_to_user,
@@ -21,7 +23,7 @@ class TaskListCreateView(APIView):
 
     def get(self, request, project_id):
         queryset = get_active_tasks(
-            owner=request.user,
+            user=request.user,
             project_id=project_id,
         )
 
@@ -36,11 +38,15 @@ class TaskListCreateView(APIView):
         serializer.is_valid(raise_exception=True)
 
         task = TaskService.create_task(
-            owner=request.user,
+            user=request.user,
             project_id=project_id,
             title=serializer.validated_data["title"],
             description=serializer.validated_data.get("description", ""),
-            assignee=serializer.validated_data.get("assignee"),
+            assignee_id=serializer.validated_data.get("assignee"),
+            status=serializer.validated_data.get("status"),
+            priority=serializer.validated_data.get("priority"),
+            due_date=serializer.validated_data.get("due_date"),
+            ordering=serializer.validated_data.get("ordering", 0),
         )
 
         return created(
@@ -49,11 +55,11 @@ class TaskListCreateView(APIView):
 
 
 class TaskDetailView(APIView):
-    permission_classes = [IsTaskProjectOwner]
+    permission_classes = [IsTaskProjectMember]
 
     def get(self, request, project_id, task_id):
-        task = TaskService.get_task_for_owner(
-            owner=request.user,
+        task = TaskService.get_task_for_user(
+            user=request.user,
             task_id=task_id,
         )
         return success(
@@ -65,12 +71,15 @@ class TaskDetailView(APIView):
         serializer.is_valid(raise_exception=True)
 
         task = TaskService.update_task(
-            owner=request.user,
+            user=request.user,
             task_id=task_id,
             title=serializer.validated_data.get("title"),
             description=serializer.validated_data.get("description"),
-            assignee=serializer.validated_data.get("assignee"),
-            is_completed=serializer.validated_data.get("is_completed"),
+            assignee_id=serializer.validated_data.get("assignee"),
+            status=serializer.validated_data.get("status"),
+            priority=serializer.validated_data.get("priority"),
+            due_date=serializer.validated_data.get("due_date"),
+            ordering=serializer.validated_data.get("ordering"),
         )
 
         return updated(
@@ -79,7 +88,7 @@ class TaskDetailView(APIView):
 
     def delete(self, request, project_id, task_id):
         TaskService.delete_task(
-            owner=request.user,
+            user=request.user,
             task_id=task_id,
         )
         return deleted()

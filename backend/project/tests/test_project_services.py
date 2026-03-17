@@ -19,7 +19,7 @@ class TestProjectService:
         ws = Workspace.objects.create(owner=owner, name="WS")
 
         project = ProjectService.create_project(
-            owner=owner,
+            user=owner,
             workspace_id=ws.id,
             name="My Project",
             description="Test description",
@@ -34,7 +34,7 @@ class TestProjectService:
         ws = Workspace.objects.create(owner=owner, name="WS")
 
         ProjectService.create_project(
-            owner=owner,
+            user=owner,
             workspace_id=ws.id,
             name="My Project",
             description="",
@@ -42,7 +42,7 @@ class TestProjectService:
 
         with pytest.raises(ConflictException):
             ProjectService.create_project(
-                owner=owner,
+                user=owner,
                 workspace_id=ws.id,
                 name="My Project",
                 description="",
@@ -53,8 +53,8 @@ class TestProjectService:
         ws = Workspace.objects.create(owner=owner, name="WS")
         project = Project.objects.create(workspace=ws, name="Project")
 
-        result = ProjectService.get_project_for_owner(
-            owner=owner,
+        result = ProjectService.get_project_for_user(
+            user=owner,
             project_id=project.id,
         )
 
@@ -64,8 +64,8 @@ class TestProjectService:
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
 
         with pytest.raises(PermissionException):
-            ProjectService.get_project_for_owner(
-                owner=owner,
+            ProjectService.get_project_for_user(
+                user=owner,
                 project_id="00000000-0000-0000-0000-000000000000",
             )
 
@@ -77,8 +77,8 @@ class TestProjectService:
         project = Project.objects.create(workspace=ws_other, name="Project")
 
         with pytest.raises(PermissionException):
-            ProjectService.get_project_for_owner(
-                owner=owner,
+            ProjectService.get_project_for_user(
+                user=owner,
                 project_id=project.id,
             )
 
@@ -88,7 +88,7 @@ class TestProjectService:
         project = Project.objects.create(workspace=ws, name="Old Name")
 
         updated = ProjectService.update_project(
-            owner=owner,
+            user=owner,
             project_id=project.id,
             name="New Name",
             description="Updated",
@@ -103,7 +103,7 @@ class TestProjectService:
         project = Project.objects.create(workspace=ws, name="Project")
 
         ProjectService.delete_project(
-            owner=owner,
+            user=owner,
             project_id=project.id,
         )
 

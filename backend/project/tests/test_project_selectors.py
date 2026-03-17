@@ -23,7 +23,7 @@ class TestProjectSelectors:
         Project.objects.create(workspace=ws_owner, name="Owner Project")
         Project.objects.create(workspace=ws_other, name="Other Project")
 
-        projects = get_active_project(owner=owner)
+        projects = get_active_project(user=owner)
 
         assert projects.count() == 1
         assert projects.first().workspace.owner == owner
@@ -36,7 +36,7 @@ class TestProjectSelectors:
         deleted_project = Project.objects.create(workspace=ws, name="Deleted Project")
         deleted_project.soft_delete()
 
-        projects = get_active_project(owner=owner)
+        projects = get_active_project(user=owner)
 
         assert project in projects
         assert deleted_project not in projects
@@ -48,7 +48,7 @@ class TestProjectSelectors:
         project = Project.objects.create(workspace=ws, name="Project")
 
         result = get_active_project_by_id(
-            owner=owner,
+            user=owner,
             project_id=project.id,
         )
 
@@ -63,7 +63,7 @@ class TestProjectSelectors:
         project = Project.objects.create(workspace=ws_other, name="Project")
 
         result = get_active_project_by_id(
-            owner=owner,
+            user=owner,
             project_id=project.id,
         )
 
@@ -77,7 +77,7 @@ class TestProjectSelectors:
         project.soft_delete()
 
         result = get_active_project_by_id(
-            owner=owner,
+            user=owner,
             project_id=project.id,
         )
 

@@ -16,6 +16,11 @@ def drf_exception_handler(exc, context):
 
     response = exception_handler(exc, context)
     if response is not None:
+        if isinstance(response.data, dict):
+            return Response(
+                {"message": "Validation failed", "errors": response.data},
+                status=response.status_code
+            )
         return Response(
             {"message": response.data.get("detail", "An error occurred.")},
             status=response.status_code

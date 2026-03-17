@@ -5,6 +5,18 @@ from project.models import Project
 
 
 class Task(BaseModel):
+    class Status(models.IntegerChoices):
+        TODO = 1, "To Do"
+        IN_PROGRESS = 2, "In Progress"
+        DONE = 3, "Done"
+        BLOCKED = 4, "Blocked"
+
+    class Priority(models.IntegerChoices):
+        LOW = 1, "Low"
+        MEDIUM = 2, "Medium"
+        HIGH = 3, "High"
+        URGENT = 4, "Urgent"
+
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -19,14 +31,27 @@ class Task(BaseModel):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    is_completed = models.BooleanField(default=False)
+    status = models.PositiveSmallIntegerField(
+        choices=Status.choices,
+        default=Status.TODO,
+    )
+    priority = models.PositiveSmallIntegerField(
+        choices=Priority.choices,
+        default=Priority.MEDIUM,
+    )
+    due_date = models.DateField(null=True, blank=True)
+    ordering = models.PositiveIntegerField(default=0)
 
     class Meta:
         db_table = "tasks"
+        ordering = ["ordering", "due_date", "-priority", "id"]
         indexes = [
             models.Index(fields=["project"]),
             models.Index(fields=["assignee"]),
-            models.Index(fields=["is_completed"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["priority"]),
+            models.Index(fields=["due_date"]),
+            models.Index(fields=["ordering"]),
         ]
 
     def __str__(self):

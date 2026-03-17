@@ -20,11 +20,11 @@ class TestTaskService:
         project = Project.objects.create(workspace=ws, name="Project")
 
         task = TaskService.create_task(
-            owner=owner,
+            user=owner,
             project_id=project.id,
             title="Task",
             description="Desc",
-            assignee=None,
+            assignee_id=None,
         )
 
         assert task.project == project
@@ -41,11 +41,11 @@ class TestTaskService:
         project = Project.objects.create(workspace=ws, name="Project")
 
         task = TaskService.create_task(
-            owner=owner,
+            user=owner,
             project_id=project.id,
             title="Task",
             description="",
-            assignee=assignee,
+            assignee_id=assignee.id,
         )
 
         assert task.assignee == assignee
@@ -58,11 +58,11 @@ class TestTaskService:
 
         with pytest.raises(PermissionException):
             TaskService.create_task(
-                owner=owner,
+                user=owner,
                 project_id=project.id,
                 title="Task",
                 description="",
-                assignee=None,
+                assignee_id=None,
             )
 
     def test_get_task_for_owner_success(self):
@@ -71,8 +71,8 @@ class TestTaskService:
         project = Project.objects.create(workspace=ws, name="Project")
         task = Task.objects.create(project=project, title="Task")
 
-        result = TaskService.get_task_for_owner(
-            owner=owner,
+        result = TaskService.get_task_for_user(
+            user=owner,
             task_id=task.id,
         )
 
@@ -82,8 +82,8 @@ class TestTaskService:
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
 
         with pytest.raises(PermissionException):
-            TaskService.get_task_for_owner(
-                owner=owner,
+            TaskService.get_task_for_user(
+                user=owner,
                 task_id="00000000-0000-0000-0000-000000000000",
             )
 
@@ -96,8 +96,8 @@ class TestTaskService:
         task = Task.objects.create(project=project, title="Task")
 
         with pytest.raises(PermissionException):
-            TaskService.get_task_for_owner(
-                owner=owner,
+            TaskService.get_task_for_user(
+                user=owner,
                 task_id=task.id,
             )
 
@@ -108,11 +108,11 @@ class TestTaskService:
         task = Task.objects.create(project=project, title="Old")
 
         updated = TaskService.update_task(
-            owner=owner,
+            user=owner,
             task_id=task.id,
             title="New",
             description="Updated",
-            assignee=None,
+            assignee_id=None,
         )
 
         assert updated.title == "New"
@@ -125,7 +125,7 @@ class TestTaskService:
         task = Task.objects.create(project=project, title="Task")
 
         TaskService.delete_task(
-            owner=owner,
+            user=owner,
             task_id=task.id,
         )
 

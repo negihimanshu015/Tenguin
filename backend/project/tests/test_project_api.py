@@ -66,7 +66,7 @@ class TestProjectAPI:
 
         response = self.client.get(f"/api/v1/projects/{project.id}/")
 
-        assert response.status_code == 404
+        assert response.status_code == 403
 
     def test_delete_project(self):
         owner = User.objects.create_user(email="owner@test.com", clerk_id="user_123")
