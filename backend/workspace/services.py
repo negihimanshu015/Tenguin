@@ -5,7 +5,7 @@ from core.exceptions import (
 )
 from django.db import IntegrityError, transaction
 from django.utils import timezone
-from workspace.models import Workspace, WorkspaceMember
+from workspace.models import Workspace, WorkspaceInvitation, WorkspaceMember
 
 
 class WorkspaceService:
@@ -116,7 +116,13 @@ class WorkspaceService:
         # 2. Deactivate projects
         ProjectService.deactivate_projects(workspace_id=workspace_id, deleted_at=deleted_at)
 
-        # 3. Deactivate workspace
+        # 3. Deactivate invitations
+        WorkspaceInvitation.objects.filter(
+            workspace=workspace,
+            status=WorkspaceInvitation.Status.PENDING
+        ).update(status=WorkspaceInvitation.Status.REVOKED)
+
+        # 4. Deactivate workspace
         workspace.is_active = False
         workspace.deleted_at = deleted_at
         workspace.save(update_fields=["is_active", "deleted_at", "updated"])
@@ -210,3 +216,108 @@ class WorkspaceService:
         membership.role = role
         membership.save()
         return workspace
+
+    @staticmethod
+    @transaction.atomic
+    def invite_member(*, user, workspace_id, email, role=WorkspaceMember.Role.MEMBER):
+        workspace = WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN,
+        )
+
+        # 1. Check if user is already a member
+        if workspace.members.filter(email=email, workspace_memberships__is_active=True).exists():
+            raise ConflictException("User is already a member of this workspace")
+
+        # 2. Check for existing pending invitation
+        existing_invite = WorkspaceInvitation.objects.filter(
+            workspace=workspace,
+            email=email,
+            status=WorkspaceInvitation.Status.PENDING
+        ).first()
+
+        if existing_invite:
+            if not existing_invite.is_expired():
+                raise ConflictException("An active invitation already exists for this email")
+            else:
+                existing_invite.status = WorkspaceInvitation.Status.EXPIRED
+                existing_invite.save()
+
+        # 3. Create new invitation
+        expires_at = timezone.now() + timezone.timedelta(days=7)
+        invitation = WorkspaceInvitation.objects.create(
+            workspace=workspace,
+            email=email,
+            role=role,
+            invited_by=user,
+            expires_at=expires_at,
+        )
+
+        return invitation
+
+    @staticmethod
+    @transaction.atomic
+    def accept_invitation(*, user, token):
+        try:
+            invitation = WorkspaceInvitation.objects.get(
+                token=token,
+                status=WorkspaceInvitation.Status.PENDING
+            )
+        except (WorkspaceInvitation.DoesNotExist, ValueError):
+            raise ValidationException("Invalid or expired invitation token") from None
+
+        if invitation.is_expired():
+            invitation.status = WorkspaceInvitation.Status.EXPIRED
+            invitation.save()
+            raise ValidationException("Invitation has expired")
+
+        # Create or update membership
+        workspace = invitation.workspace
+        membership, created = WorkspaceMember.objects.get_or_create(
+            workspace=workspace,
+            user=user,
+            defaults={"role": invitation.role, "invited_by": invitation.invited_by}
+        )
+
+        if not created:
+            membership.is_active = True
+            membership.role = invitation.role
+            membership.invited_by = invitation.invited_by
+            membership.save()
+
+        # Mark invitation as accepted
+        invitation.status = WorkspaceInvitation.Status.ACCEPTED
+        invitation.save()
+
+        return workspace
+
+    @staticmethod
+    @transaction.atomic
+    def revoke_invitation(*, user, invitation_id):
+        invitation = WorkspaceInvitation.objects.select_related("workspace").get(id=invitation_id)
+
+        # Check permissions
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=invitation.workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN,
+        )
+
+        if invitation.status != WorkspaceInvitation.Status.PENDING:
+            raise ConflictException("Only pending invitations can be revoked")
+
+        invitation.status = WorkspaceInvitation.Status.REVOKED
+        invitation.save()
+        return invitation
+
+    @staticmethod
+    def get_invitations_for_user(*, email):
+        """
+        Returns pending invitations sent to the given email address.
+        """
+        return WorkspaceInvitation.objects.filter(
+            email=email,
+            status=WorkspaceInvitation.Status.PENDING,
+            workspace__is_active=True
+        ).select_related("workspace", "invited_by").order_by("-created")

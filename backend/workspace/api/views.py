@@ -5,6 +5,7 @@ from core.response import (
     success,
     updated,
 )
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from workspace.permissions import (
     IsWorkspaceAdmin,
@@ -14,6 +15,11 @@ from workspace.permissions import (
 from workspace.selectors import (
     get_active_workspaces,
     get_workspace_members,
+)
+from workspace.serializers.invitation import (
+    WorkspaceInvitationAcceptSerializer,
+    WorkspaceInvitationCreateSerializer,
+    WorkspaceInvitationSerializer,
 )
 from workspace.serializers.member import WorkspaceMemberSerializer
 from workspace.serializers.workspace_detail import WorkspaceDetailSerializer
@@ -144,3 +150,69 @@ class WorkspaceMemberRoleChangeView(APIView):
             role=role,
         )
         return success(data={"message": "Role updated successfully"})
+
+
+class WorkspaceInvitationListCreateView(APIView):
+    permission_classes = [IsWorkspaceAdmin]
+
+    def get(self, request, workspace_id):
+        from workspace.models import WorkspaceInvitation
+        invitations = WorkspaceInvitation.objects.filter(
+            workspace_id=workspace_id,
+            status=WorkspaceInvitation.Status.PENDING
+        ).order_by("-created")
+
+        serializer = WorkspaceInvitationSerializer(invitations, many=True)
+        return success(data=serializer.data)
+
+    def post(self, request, workspace_id):
+        serializer = WorkspaceInvitationCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        invitation = WorkspaceService.invite_member(
+            user=request.user,
+            workspace_id=workspace_id,
+            email=serializer.validated_data["email"],
+            role=serializer.validated_data.get("role", "MEMBER"),
+        )
+
+        return created(
+            data=WorkspaceInvitationSerializer(invitation).data
+        )
+
+
+class WorkspaceInvitationRevokeView(APIView):
+    permission_classes = [IsWorkspaceAdmin]
+
+    def delete(self, request, workspace_id, invitation_id):
+        WorkspaceService.revoke_invitation(
+            user=request.user,
+            invitation_id=invitation_id,
+        )
+        return deleted()
+
+
+class WorkspaceInvitationAcceptView(APIView):
+    # This endpoint is designed to be public (or at least accessible with a token)
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = WorkspaceInvitationAcceptSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        WorkspaceService.accept_invitation(
+            user=request.user,
+            token=serializer.validated_data["token"],
+        )
+        return success(message="Invitation accepted successfully")
+
+
+class WorkspaceInvitationMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        invitations = WorkspaceService.get_invitations_for_user(
+            email=request.user.email
+        )
+        serializer = WorkspaceInvitationSerializer(invitations, many=True)
+        return success(data=serializer.data)

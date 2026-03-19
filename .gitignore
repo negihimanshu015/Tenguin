@@ -122,3 +122,4 @@ yarn-error.log
 .ruff_cache/
 
 frontend/
+.agents/

@@ -1,6 +1,10 @@
 from django.urls import path
 from workspace.api.views import (
     WorkspaceDetailView,
+    WorkspaceInvitationAcceptView,
+    WorkspaceInvitationListCreateView,
+    WorkspaceInvitationMeView,
+    WorkspaceInvitationRevokeView,
     WorkspaceListCreateView,
     WorkspaceMemberAddRemoveView,
     WorkspaceMemberListView,
@@ -32,5 +36,26 @@ urlpatterns = [
         "<uuid:workspace_id>/members/role/",
         WorkspaceMemberRoleChangeView.as_view(),
         name="workspace-members-role-change",
+    ),
+    path(
+        "<uuid:workspace_id>/invitations/",
+        WorkspaceInvitationListCreateView.as_view(),
+        name="workspace-invitations-list",
+    ),
+    path(
+        "<uuid:workspace_id>/invitations/<uuid:invitation_id>/",
+        WorkspaceInvitationRevokeView.as_view(),
+        name="workspace-invitations-revoke",
+    ),
+    # Public/Global invitation accept endpoint
+    path(
+        "invitations/accept/",
+        WorkspaceInvitationAcceptView.as_view(),
+        name="workspace-invitations-accept",
+    ),
+    path(
+        "invitations/me/",
+        WorkspaceInvitationMeView.as_view(),
+        name="workspace-invitations-me",
     ),
 ]

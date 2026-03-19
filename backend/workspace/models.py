@@ -1,3 +1,5 @@
+import uuid
+
 from core.models.base import BaseModel
 from django.conf import settings
 from django.db import models
@@ -78,3 +80,56 @@ class Workspace(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class WorkspaceInvitation(BaseModel):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        ACCEPTED = "ACCEPTED", "Accepted"
+        EXPIRED = "EXPIRED", "Expired"
+        REVOKED = "REVOKED", "Revoked"
+
+    workspace = models.ForeignKey(
+        "workspace.Workspace",
+        on_delete=models.CASCADE,
+        related_name="invitations",
+    )
+    email = models.EmailField()
+    role = models.CharField(
+        max_length=20,
+        choices=WorkspaceMember.Role.choices,
+        default=WorkspaceMember.Role.MEMBER,
+    )
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_workspace_invitations",
+    )
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "workspace_invitations"
+        indexes = [
+            models.Index(fields=["token"]),
+            models.Index(fields=["email", "status"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["workspace", "email"],
+                condition=models.Q(status="PENDING"),
+                name="unique_pending_invitation_per_workspace",
+            )
+        ]
+
+    def __str__(self):
+        return f"Invite to {self.email} for {self.workspace.name} ({self.status})"
+
+    def is_expired(self):
+        from django.utils import timezone
+        return self.expires_at < timezone.now()
