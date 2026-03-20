@@ -213,8 +213,20 @@ class WorkspaceService:
         if membership.user == workspace.owner:
             raise ValidationException("Cannot change the owner's role")
 
+        old_role = membership.role
         membership.role = role
         membership.save()
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=workspace,
+            action="ROLE_CHANGED",
+            target_object=membership,
+            description=f"Role for {membership.user.email} changed to {role}",
+            metadata={"old_role": old_role, "new_role": role}
+        )
+
         return workspace
 
     @staticmethod
@@ -289,6 +301,15 @@ class WorkspaceService:
         # Mark invitation as accepted
         invitation.status = WorkspaceInvitation.Status.ACCEPTED
         invitation.save()
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=workspace,
+            action="MEMBER_ADDED",
+            target_object=membership,
+            description=f"User {user.email} joined the workspace"
+        )
 
         return workspace
 

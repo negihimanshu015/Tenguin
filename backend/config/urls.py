@@ -17,5 +17,6 @@ urlpatterns = [
     path("api/v1/workspaces/", include("workspace.urls")),
     path("api/v1/projects/", include("project.urls")),
     path("api/v1/users/me/", MeView.as_view(), name="me"),
+    path("api/v1/audit-logs/", include("audit_log.urls")),
     path("api/v1/", include("tasks.urls")),
 ]

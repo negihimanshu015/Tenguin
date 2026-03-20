@@ -68,12 +68,25 @@ class TaskService:
         if due_date is not None:
             create_kwargs["due_date"] = due_date
 
-        return Task.objects.create(**create_kwargs)
+        task = Task.objects.create(**create_kwargs)
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=project.workspace,
+            project=project,
+            action="TASK_CREATED",
+            target_object=task,
+            description=f"Task '{task.title}' created"
+        )
+
+        return task
 
     @staticmethod
     @transaction.atomic
     def update_task(*, user, task_id, **kwargs):
         task = TaskService.get_task_for_user(user=user, task_id=task_id)
+        old_assignee = task.assignee
 
         # Handle title specifically for naming rules
         if "title" in kwargs and kwargs["title"] is not None:
@@ -101,6 +114,22 @@ class TaskService:
                 setattr(task, field, kwargs[field])
 
         task.save()
+
+        if "assignee_id" in kwargs and task.assignee != old_assignee:
+            from audit_log.services import create_audit_log
+            create_audit_log(
+                user=user,
+                workspace=task.project.workspace,
+                project=task.project,
+                action="TASK_REASSIGNED",
+                target_object=task,
+                description=f"Task '{task.title}' reassigned to {task.assignee}",
+                metadata={
+                    "old_assignee_id": str(old_assignee.id) if old_assignee else None,
+                    "new_assignee_id": str(task.assignee.id) if task.assignee else None
+                }
+            )
+
         return task
 
     @staticmethod

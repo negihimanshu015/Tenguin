@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'workspace',
     'project',
     'tasks',
+    'audit_log',
     'health.apps.HealthConfig',
     'drf_spectacular',
 ]

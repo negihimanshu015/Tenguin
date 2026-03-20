@@ -35,11 +35,22 @@ class ProjectService:
         )
 
         try:
-            return Project.objects.create(
+            project = Project.objects.create(
                 workspace=workspace,
                 name=name,
                 description=description,
             )
+
+            from audit_log.services import create_audit_log
+            create_audit_log(
+                user=user,
+                workspace=workspace,
+                action="PROJECT_CREATED",
+                target_object=project,
+                description=f"Project '{project.name}' created"
+            )
+
+            return project
         except IntegrityError as err:
             raise ConflictException("Project with this name already exists") from err
 
