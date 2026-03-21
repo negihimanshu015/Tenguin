@@ -22,9 +22,20 @@ from tasks.services import TaskService
 class TaskListCreateView(APIView):
 
     def get(self, request, project_id):
+        filters = {
+            "status": request.query_params.get("status"),
+            "assignee": request.query_params.get("assignee"),
+            "priority": request.query_params.get("priority"),
+            "due_date": request.query_params.get("due_date"),
+            "search": request.query_params.get("search"),
+        }
+        # Remove None values
+        filters = {k: v for k, v in filters.items() if v is not None}
+
         queryset = get_active_tasks(
             user=request.user,
             project_id=project_id,
+            filters=filters,
         )
 
         paginator = DefaultPagination()
@@ -97,8 +108,19 @@ class TaskDetailView(APIView):
 class AssignedTaskListView(APIView):
 
     def get(self, request):
+        filters = {
+            "project": request.query_params.get("project"),
+            "status": request.query_params.get("status"),
+            "priority": request.query_params.get("priority"),
+            "due_date": request.query_params.get("due_date"),
+            "search": request.query_params.get("search"),
+        }
+        # Remove None values
+        filters = {k: v for k, v in filters.items() if v is not None}
+
         queryset = get_active_tasks_assigned_to_user(
             assignee=request.user,
+            filters=filters,
         )
 
         paginator = DefaultPagination()
