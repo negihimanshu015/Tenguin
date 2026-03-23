@@ -2,6 +2,8 @@ from django.urls import path
 
 from .api.views import (
     AssignedTaskListView,
+    CommentDetailApi,
+    CommentListCreateApi,
     TaskDetailView,
     TaskListCreateView,
 )
@@ -23,5 +25,16 @@ urlpatterns = [
         "tasks/assigned-to-me/",
         AssignedTaskListView.as_view(),
         name="tasks-assigned-to-me",
+    ),
+    # Comment Endpoints
+    path(
+        "tasks/<uuid:task_id>/comments/",
+        CommentListCreateApi.as_view(),
+        name="comment-list-create",
+    ),
+    path(
+        "comments/<uuid:comment_id>/",
+        CommentDetailApi.as_view(),
+        name="comment-detail",
     ),
 ]

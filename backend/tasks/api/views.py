@@ -128,3 +128,55 @@ class AssignedTaskListView(APIView):
 
         serializer = TaskListSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
+
+
+class CommentListCreateApi(APIView):
+    def get(self, request, task_id):
+        from tasks.selectors import get_comments_for_task
+        from tasks.serializers.comment import CommentSerializer
+
+        comments = get_comments_for_task(user=request.user, task_id=task_id)
+        serializer = CommentSerializer(comments, many=True)
+        return success(data=serializer.data)
+
+    def post(self, request, task_id):
+        from tasks.serializers.comment import CommentSerializer
+        from tasks.services import CommentService
+
+        serializer = CommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        comment = CommentService.create_comment(
+            user=request.user,
+            task_id=task_id,
+            content=serializer.validated_data["content"]
+        )
+
+        return created(data=CommentSerializer(comment).data)
+
+
+class CommentDetailApi(APIView):
+    def patch(self, request, comment_id):
+        from tasks.serializers.comment import CommentSerializer
+        from tasks.services import CommentService
+
+        serializer = CommentSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        comment = CommentService.update_comment(
+            user=request.user,
+            comment_id=comment_id,
+            content=serializer.validated_data.get("content")
+        )
+
+        return updated(data=CommentSerializer(comment).data)
+
+    def delete(self, request, comment_id):
+        from tasks.services import CommentService
+
+        CommentService.delete_comment(
+            user=request.user,
+            comment_id=comment_id
+        )
+
+        return deleted()

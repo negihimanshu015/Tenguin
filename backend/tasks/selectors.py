@@ -90,3 +90,16 @@ def get_active_tasks_assigned_to_user(*, assignee, user=None, filters=None):
         )
 
     return queryset.select_related("project")
+
+
+def get_comments_for_task(*, user, task_id):
+    from tasks.models import Comment
+    from tasks.services import TaskService
+
+    # This will check for user access to the task/workspace
+    TaskService.get_task_for_user(user=user, task_id=task_id)
+
+    return Comment.objects.filter(
+        task_id=task_id,
+        is_active=True
+    ).select_related("author").order_by("created")

@@ -162,3 +162,76 @@ class TaskService:
 
         task.is_active = False
         task.save()
+
+
+class CommentService:
+    @staticmethod
+    @transaction.atomic
+    def create_comment(*, user, task_id, content):
+        content = content.strip()
+        if not content:
+            raise ValidationException("Comment content cannot be empty")
+
+        task = TaskService.get_task_for_user(user=user, task_id=task_id)
+
+        from tasks.models import Comment
+        comment = Comment.objects.create(
+            task=task,
+            author=user,
+            content=content
+        )
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=task.project.workspace,
+            project=task.project,
+            action="TASK_COMMENT_CREATED",
+            target_object=task,
+            description=f"Comment added to task '{task.title}'",
+            metadata={"comment_id": str(comment.id)}
+        )
+
+        return comment
+
+    @staticmethod
+    @transaction.atomic
+    def update_comment(*, user, comment_id, content):
+        from tasks.models import Comment
+        try:
+            comment = Comment.objects.select_related("task__project__workspace").get(
+                id=comment_id,
+                is_active=True
+            )
+        except Comment.DoesNotExist:
+            raise ValidationException("Comment not found") from None
+
+        if comment.author != user:
+            raise PermissionException("You can only edit your own comments")
+
+        content = content.strip()
+        if not content:
+            raise ValidationException("Comment content cannot be empty")
+
+        comment.content = content
+        comment.save()
+
+        return comment
+
+    @staticmethod
+    @transaction.atomic
+    def delete_comment(*, user, comment_id):
+        from tasks.models import Comment
+        try:
+            comment = Comment.objects.select_related("task__project__workspace").get(
+                id=comment_id,
+                is_active=True
+            )
+        except Comment.DoesNotExist:
+            raise ValidationException("Comment not found") from None
+
+        if comment.author != user:
+            raise PermissionException("You can only delete your own comments")
+
+        comment.is_active = False
+        comment.save()

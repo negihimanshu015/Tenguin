@@ -56,3 +56,24 @@ class Task(BaseModel):
 
     def __str__(self):
         return self.title
+
+
+class Comment(BaseModel):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name="comments",
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="task_comments",
+    )
+    content = models.TextField()
+
+    class Meta:
+        db_table = "task_comments"
+        ordering = ["created"]
+
+    def __str__(self):
+        return f"Comment by {self.author} on {self.task}"
