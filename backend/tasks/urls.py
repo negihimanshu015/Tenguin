@@ -6,6 +6,9 @@ from .api.views import (
     CommentListCreateApi,
     TaskDetailView,
     TaskListCreateView,
+    TaskPermanentDeleteView,
+    TaskRestoreView,
+    TaskTrashListView,
 )
 
 app_name = "tasks"
@@ -20,6 +23,21 @@ urlpatterns = [
         "projects/<uuid:project_id>/tasks/<uuid:task_id>/",
         TaskDetailView.as_view(),
         name="task-detail",
+    ),
+    path(
+        "projects/<uuid:project_id>/tasks/trash/",
+        TaskTrashListView.as_view(),
+        name="task-trash-list",
+    ),
+    path(
+        "projects/<uuid:project_id>/tasks/<uuid:task_id>/restore/",
+        TaskRestoreView.as_view(),
+        name="task-restore",
+    ),
+    path(
+        "projects/<uuid:project_id>/tasks/<uuid:task_id>/permanent-delete/",
+        TaskPermanentDeleteView.as_view(),
+        name="task-permanent-delete",
     ),
     path(
         "tasks/assigned-to-me/",

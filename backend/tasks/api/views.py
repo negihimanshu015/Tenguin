@@ -180,3 +180,38 @@ class CommentDetailApi(APIView):
         )
 
         return deleted()
+
+class TaskTrashListView(APIView):
+    def get(self, request, project_id):
+        from tasks.selectors import get_deleted_tasks
+        queryset = get_deleted_tasks(
+            user=request.user,
+            project_id=project_id,
+        )
+
+        paginator = DefaultPagination()
+        page = paginator.paginate_queryset(queryset, request)
+
+        serializer = TaskListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+class TaskRestoreView(APIView):
+    def post(self, request, project_id, task_id):
+        task = TaskService.restore_task(
+            user=request.user,
+            task_id=task_id,
+        )
+        return success(
+            data=TaskDetailSerializer(task).data,
+            message="Task restored successfully"
+        )
+
+
+class TaskPermanentDeleteView(APIView):
+    def delete(self, request, project_id, task_id):
+        TaskService.permanent_delete_task(
+            user=request.user,
+            task_id=task_id,
+        )
+        return success(message="Task permanently deleted")

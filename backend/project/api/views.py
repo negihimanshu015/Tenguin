@@ -95,3 +95,39 @@ class ProjectDetailView(APIView):
             project_id=project_id,
         )
         return deleted()
+class ProjectTrashListView(APIView):
+    def get(self, request):
+        workspace_id = request.query_params.get("workspace_id")
+        if not workspace_id:
+            from core.exceptions import ValidationException
+            raise ValidationException("workspace_id is required")
+
+        from project.selectors import get_deleted_projects
+        queryset = get_deleted_projects(user=request.user, workspace_id=workspace_id)
+
+        paginator = DefaultPagination()
+        page = paginator.paginate_queryset(queryset, request)
+
+        serializer = ProjectListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+class ProjectRestoreView(APIView):
+    def post(self, request, project_id):
+        project = ProjectService.restore_project(
+            user=request.user,
+            project_id=project_id,
+        )
+        return success(
+            data=ProjectDetailSerializer(project).data,
+            message="Project restored successfully"
+        )
+
+
+class ProjectPermanentDeleteView(APIView):
+    def delete(self, request, project_id):
+        ProjectService.permanent_delete_project(
+            user=request.user,
+            project_id=project_id,
+        )
+        return success(message="Project permanently deleted")

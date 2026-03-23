@@ -25,8 +25,8 @@ class AuditLog(models.Model):
     )
 
     # Generic Foreign Key to the target object (Task, Project, Member, etc.)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.UUIDField()
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.UUIDField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
     action = models.CharField(max_length=100)

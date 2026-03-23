@@ -6,7 +6,7 @@ def create_audit_log(
     user,
     workspace,
     action: str,
-    target_object,
+    target_object=None,
     project=None,
     description: str = "",
     metadata: dict = None

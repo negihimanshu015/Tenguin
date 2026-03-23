@@ -4,7 +4,6 @@ from core.exceptions import (
     ValidationException,
 )
 from django.db import IntegrityError, transaction
-from django.utils import timezone
 from project.models import Project
 from workspace.services import WorkspaceService
 
@@ -116,12 +115,84 @@ class ProjectService:
             minimum_role=WorkspaceMember.Role.ADMIN,
         )
 
-        deleted_at = timezone.now()
+        project.soft_delete()
 
-        # 1. Deactivate tasks
-        TaskService.deactivate_tasks(project_id=project_id, deleted_at=deleted_at)
+        # Also deactivate tasks
+        TaskService.deactivate_tasks(project_id=project_id, deleted_at=project.deleted_at)
 
-        # 2. Deactivate project
-        project.is_active = False
-        project.deleted_at = deleted_at
-        project.save(update_fields=["is_active", "deleted_at", "updated"])
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=project.workspace,
+            project=project,
+            action="PROJECT_DELETED",
+            description=f"Project '{project.name}' moved to trash"
+        )
+
+    @staticmethod
+    @transaction.atomic
+    def restore_project(*, user, project_id):
+        from workspace.models import WorkspaceMember
+        try:
+            project = Project.objects.select_related("workspace").get(
+                id=project_id,
+                is_active=False
+            )
+        except Project.DoesNotExist:
+            raise ValidationException("Project not found in trash") from None
+
+        # Check if workspace is active
+        if not project.workspace.is_active:
+            raise ValidationException("Cannot restore project because its workspace is deleted.")
+
+        # Project restore requires Admin role in workspace
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=project.workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN,
+        )
+
+        project.restore()
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=project.workspace,
+            project=project,
+            action="PROJECT_RESTORED",
+            target_object=project,
+            description=f"Project '{project.name}' restored"
+        )
+        return project
+
+    @staticmethod
+    @transaction.atomic
+    def permanent_delete_project(*, user, project_id):
+        from workspace.models import WorkspaceMember
+        try:
+            project = Project.objects.select_related("workspace").get(
+                id=project_id,
+                is_active=False
+            )
+        except Project.DoesNotExist:
+            raise ValidationException("Project not found in trash") from None
+
+        # Permanent delete requires Admin role in workspace
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=project.workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN,
+        )
+
+        name = project.name
+        workspace = project.workspace
+
+        project.delete() # Hard delete
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=workspace,
+            action="PROJECT_PERMANENTLY_DELETED",
+            description=f"Project '{name}' permanently deleted"
+        )

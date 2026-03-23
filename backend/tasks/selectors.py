@@ -103,3 +103,19 @@ def get_comments_for_task(*, user, task_id):
         task_id=task_id,
         is_active=True
     ).select_related("author").order_by("created")
+
+def get_deleted_tasks(*, user, project_id):
+    from workspace.services import WorkspaceService
+
+    # Ensure user has access to project/workspace
+    task_project = Task.objects.filter(project_id=project_id).values("project__workspace_id").first()
+    if task_project:
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=task_project["project__workspace_id"]
+        )
+
+    return Task.objects.filter(
+        project_id=project_id,
+        is_active=False
+    ).select_related("project", "assignee").order_by("-deleted_at")

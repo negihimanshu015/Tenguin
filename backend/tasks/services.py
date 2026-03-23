@@ -160,8 +160,77 @@ class TaskService:
             task_id=task_id,
         )
 
-        task.is_active = False
-        task.save()
+        task.soft_delete()
+
+    @staticmethod
+    @transaction.atomic
+    def restore_task(*, user, task_id):
+        try:
+            task = Task.objects.select_related("project__workspace").get(
+                id=task_id,
+                is_active=False
+            )
+        except Task.DoesNotExist:
+            raise ValidationException("Task not found in trash") from None
+
+        # Check if project is active
+        if not task.project.is_active:
+            raise ValidationException("Cannot restore task because its project is deleted. Restore the project first.")
+
+        # Check workspace access (Member role required)
+        from workspace.services import WorkspaceService
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=task.project.workspace_id,
+        )
+
+        task.restore()
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=task.project.workspace,
+            project=task.project,
+            action="TASK_RESTORED",
+            target_object=task,
+            description=f"Task '{task.title}' restored"
+        )
+        return task
+
+    @staticmethod
+    @transaction.atomic
+    def permanent_delete_task(*, user, task_id):
+        from workspace.models import WorkspaceMember
+        try:
+            task = Task.objects.select_related("project__workspace").get(
+                id=task_id,
+                is_active=False
+            )
+        except Task.DoesNotExist:
+            raise ValidationException("Task not found in trash") from None
+
+        # Permanent delete requires Admin role in workspace
+        from workspace.services import WorkspaceService
+        WorkspaceService.get_workspace_for_user_with_role(
+            user=user,
+            workspace_id=task.project.workspace_id,
+            minimum_role=WorkspaceMember.Role.ADMIN
+        )
+
+        title = task.title
+        workspace = task.project.workspace
+        project = task.project
+
+        task.delete() # Hard delete
+
+        from audit_log.services import create_audit_log
+        create_audit_log(
+            user=user,
+            workspace=workspace,
+            project=project,
+            action="TASK_PERMANENTLY_DELETED",
+            description=f"Task '{title}' permanently deleted"
+        )
 
 
 class CommentService:
@@ -233,5 +302,4 @@ class CommentService:
         if comment.author != user:
             raise PermissionException("You can only delete your own comments")
 
-        comment.is_active = False
-        comment.save()
+        comment.soft_delete()
